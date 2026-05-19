@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Visual 3 — Death of the Big Man</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 40px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .controls {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 22px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ctrl-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .ctrl-label {
+    font-size: 12px;
+    color: #555;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .toggle-btn {
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: 1.5px solid #aaa;
+    background: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: all 0.15s;
+    color: #333;
+    font-weight: bold;
+  }
+  .toggle-btn.active {
+    border-color: currentColor;
+    color: white;
+  }
+  .toggle-btn.era90 { --c: #1a3a6b; }
+  .toggle-btn.era10 { --c: #c0392b; }
+  .toggle-btn.eraToday { --c: #2e7d32; }
+  .toggle-btn.era90.active { background: #1a3a6b; border-color: #1a3a6b; color: #fff; }
+  .toggle-btn.era10.active { background: #c0392b; border-color: #c0392b; color: #fff; }
+  .toggle-btn.eraToday.active { background: #2e7d32; border-color: #2e7d32; color: #fff; }
+  .pos-btn {
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: 1.5px solid #aaa;
+    background: #f0f0f0;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    color: #333;
+  }
+  .pos-btn.active {
+    background: #1a3a6b;
+    color: #fff;
+    border-color: #1a3a6b;
+  }
+  .chart-wrap {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+  .sidebar {
+    width: 220px;
+    padding-top: 8px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #333;
+  }
+  .legend-line {
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .stat-callout {
+    background: #fff3f3;
+    border-left: 4px solid #c0392b;
+    padding: 10px 12px;
+    margin-top: 20px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #333;
+  }
+  .stat-callout strong { color: #c0392b; }
+  .stat-callout2 {
+    background: #f0f8f0;
+    border-left: 4px solid #2e7d32;
+    padding: 10px 12px;
+    margin-top: 10px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #333;
+  }
+  .stat-callout2 strong { color: #2e7d32; }
+  .source {
+    font-size: 11px;
+    color: #888;
+    margin-top: 16px;
+    text-align: left;
+    width: 100%;
+    max-width: 780px;
+  }
+  .note {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+    text-align: left;
+    width: 100%;
+    max-width: 780px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<h1>Visual 3 — Death of the Big Man</h1>
+<p class="subtitle">Average stats for Centers (C) and Power Forwards (PF) across three NBA eras — normalized per 36 minutes</p>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Position:</span>
+    <button class="pos-btn active" id="btnC" onclick="setPos('C')">Center (C)</button>
+    <button class="pos-btn" id="btnPF" onclick="setPos('PF')">Power Forward (PF)</button>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Show eras:</span>
+    <button class="toggle-btn era90 active" id="btn90" onclick="toggleEra('90s')">90s–00s</button>
+    <button class="toggle-btn era10 active" id="btn10" onclick="toggleEra('10s')">2010s</button>
+    <button class="toggle-btn eraToday active" id="btnToday" onclick="toggleEra('today')">Today</button>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <svg id="radar" width="480" height="460" viewBox="0 0 480 460"></svg>
+  <div class="sidebar">
+    <div class="legend-item"><div class="legend-line" style="background:#1a3a6b;"></div><span><b>90s–00s</b> avg. big man</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:#c0392b;"></div><span><b>2010s</b> avg. big man</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:#2e7d32;"></div><span><b>Today (2020–24)</b> avg. big man</span></div>
+
+    <div class="stat-callout">
+      <strong>The 3PM axis tells the story:</strong><br>
+      Average center went from <strong>0.1 3PM/36</strong> in the 90s to <strong>1.8 3PM/36</strong> today — an 18x increase.
+    </div>
+    <div class="stat-callout2">
+      <strong>Assists surged too:</strong><br>
+      Modern bigs are expected to pass out of pick-and-roll coverage — a skill that barely existed in the 90s big man archetype.
+    </div>
+  </div>
+</div>
+
+<div class="source">Proposal static mock-up &nbsp;·&nbsp; Final version: D3 radar with real player-season CSV data &nbsp;·&nbsp; Sources: Basketball Reference / regular_season_totals_2010_2024.csv</div>
+<div class="note">Toggle interactions and hover-to-inspect axis details will be implemented in D3.js for the final deliverable.</div>
+
+<script>
+const axes = ['Points\n(per 36)', 'Rebounds\n(per 36)', 'Assists\n(per 36)', '3PM\n(per 36)', 'Blocks\n(per 36)', 'Usage\nRate'];
+const N = axes.length;
+
+// Normalized 0–1 values (relative to max across all eras/positions)
+// Centers
+const dataC = {
+  '90s': { vals:[0.72, 0.88, 0.20, 0.03, 0.82, 0.60], label:'90s–00s C', color:'#1a3a6b' },
+  '10s': { vals:[0.78, 0.80, 0.28, 0.28, 0.70, 0.68], label:'2010s C', color:'#c0392b' },
+  'today':{ vals:[0.80, 0.72, 0.38, 0.62, 0.62, 0.75], label:'Today C', color:'#2e7d32' },
+};
+// Raw labels for tooltip
+const rawC = {
+  '90s':   ['16.2', '11.8', '1.8', '0.1', '2.1', '23.4%'],
+  '10s':   ['17.5', '11.1', '2.5', '0.6', '1.8', '25.1%'],
+  'today': ['18.0', '10.2', '3.4', '1.4', '1.6', '27.8%'],
+};
+// Power Forwards
+const dataPF = {
+  '90s': { vals:[0.78, 0.80, 0.22, 0.08, 0.55, 0.65], label:'90s–00s PF', color:'#1a3a6b' },
+  '10s': { vals:[0.80, 0.72, 0.30, 0.40, 0.42, 0.72], label:'2010s PF', color:'#c0392b' },
+  'today':{ vals:[0.84, 0.65, 0.42, 0.72, 0.35, 0.80], label:'Today PF', color:'#2e7d32' },
+};
+const rawPF = {
+  '90s':   ['17.5', '11.1', '2.0', '0.2', '1.4', '24.1%'],
+  '10s':   ['18.1', '10.2', '2.7', '0.9', '1.1', '26.4%'],
+  'today': ['18.9', '9.3', '3.8', '1.6', '0.9', '29.2%'],
+};
+
+let currentPos = 'C';
+let visibleEras = { '90s': true, '10s': true, 'today': true };
+const eraKeys = ['90s','10s','today'];
+
+const svg = document.getElementById('radar');
+const W = 480, H = 460;
+const cx = 220, cy = 230, R = 160;
+const ns = 'http://www.w3.org/2000/svg';
+
+function angle(i) { return (Math.PI * 2 * i / N) - Math.PI/2; }
+function ptOnAxis(val, i) {
+  return [cx + val*R*Math.cos(angle(i)), cy + val*R*Math.sin(angle(i))];
+}
+
+function drawGrid() {
+  const g = document.createElementNS(ns,'g');
+  g.setAttribute('id','grid');
+  // Grid rings
+  [0.25,0.5,0.75,1.0].forEach(r => {
+    const pts = Array.from({length:N},(_,i)=>ptOnAxis(r,i));
+    const poly = document.createElementNS(ns,'polygon');
+    poly.setAttribute('points', pts.map(p=>p.join(',')).join(' '));
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke', r===1.0 ? '#bbb' : '#ddd');
+    poly.setAttribute('stroke-width', r===1.0 ? '1.5' : '0.8');
+    g.appendChild(poly);
+    // Ring label
+    const lbl = document.createElementNS(ns,'text');
+    lbl.setAttribute('x', cx+4); lbl.setAttribute('y', cy - r*R + 3);
+    lbl.setAttribute('font-size','9'); lbl.setAttribute('fill','#bbb');
+    lbl.setAttribute('font-family','Arial,sans-serif');
+    lbl.textContent = ['','25%','50%','75%',''][Math.round(r/0.25)];
+    g.appendChild(lbl);
+  });
+  // Axis spokes
+  for(let i=0;i<N;i++) {
+    const [ax,ay] = ptOnAxis(1,i);
+    const line = document.createElementNS(ns,'line');
+    line.setAttribute('x1',cx); line.setAttribute('y1',cy);
+    line.setAttribute('x2',ax); line.setAttribute('y2',ay);
+    line.setAttribute('stroke','#ccc'); line.setAttribute('stroke-width','1');
+    g.appendChild(line);
+  }
+  svg.appendChild(g);
+}
+
+function drawAxisLabels() {
+  const g = document.createElementNS(ns,'g');
+  g.setAttribute('id','axis-labels');
+  for(let i=0;i<N;i++) {
+    const [ax,ay] = ptOnAxis(1.28,i);
+    const lines = axes[i].split('\n');
+    lines.forEach((line,li) => {
+      const t = document.createElementNS(ns,'text');
+      t.setAttribute('x',ax); t.setAttribute('y',ay + li*13 - (lines.length-1)*6);
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-size','11'); t.setAttribute('fill','#333');
+      t.setAttribute('font-family','Arial,sans-serif'); t.setAttribute('font-weight','bold');
+      t.textContent = line;
+      g.appendChild(t);
+    });
+  }
+  svg.appendChild(g);
+}
+
+function drawPolygons() {
+  const existing = document.getElementById('polys');
+  if(existing) existing.remove();
+  const g = document.createElementNS(ns,'g');
+  g.setAttribute('id','polys');
+
+  const data = currentPos === 'C' ? dataC : dataPF;
+  const raw = currentPos === 'C' ? rawC : rawPF;
+
+  eraKeys.forEach(era => {
+    if(!visibleEras[era]) return;
+    const d = data[era];
+    const pts = d.vals.map((v,i)=>ptOnAxis(v,i));
+
+    const poly = document.createElementNS(ns,'polygon');
+    poly.setAttribute('points', pts.map(p=>p.join(',')).join(' '));
+    poly.setAttribute('fill', d.color+'22');
+    poly.setAttribute('stroke', d.color);
+    poly.setAttribute('stroke-width','2.5');
+    poly.setAttribute('stroke-linejoin','round');
+    g.appendChild(poly);
+
+    // Dots on vertices
+    pts.forEach(([px,py],i) => {
+      const dot = document.createElementNS(ns,'circle');
+      dot.setAttribute('cx',px); dot.setAttribute('cy',py);
+      dot.setAttribute('r','5'); dot.setAttribute('fill',d.color);
+      dot.setAttribute('stroke','#fff'); dot.setAttribute('stroke-width','1.5');
+      dot.style.cursor='pointer';
+
+      // Tooltip
+      dot.addEventListener('mouseenter',function() {
+        showTip(px,py,axes[i].replace('\n',' '),raw[era][i],d.color,era);
+      });
+      dot.addEventListener('mouseleave',hideTip);
+      g.appendChild(dot);
+    });
+  });
+
+  svg.appendChild(g);
+  drawTooltipLayer();
+}
+
+function drawTooltipLayer() {
+  const existing = document.getElementById('tip-layer');
+  if(existing) existing.remove();
+  const g = document.createElementNS(ns,'g');
+  g.setAttribute('id','tip-layer');
+  g.setAttribute('display','none');
+  const bg = document.createElementNS(ns,'rect');
+  bg.setAttribute('id','tip-bg'); bg.setAttribute('rx','4'); bg.setAttribute('ry','4');
+  bg.setAttribute('fill','#fff'); bg.setAttribute('stroke','#aaa'); bg.setAttribute('stroke-width','1');
+  const t1 = document.createElementNS(ns,'text');
+  t1.setAttribute('id','tip-t1'); t1.setAttribute('font-size','11');
+  t1.setAttribute('font-family','Arial,sans-serif'); t1.setAttribute('fill','#111');
+  t1.setAttribute('font-weight','bold');
+  const t2 = document.createElementNS(ns,'text');
+  t2.setAttribute('id','tip-t2'); t2.setAttribute('font-size','11');
+  t2.setAttribute('font-family','Arial,sans-serif'); t2.setAttribute('fill','#555');
+  g.appendChild(bg); g.appendChild(t1); g.appendChild(t2);
+  svg.appendChild(g);
+}
+
+function showTip(px,py,axis,val,color,era) {
+  const g = document.getElementById('tip-layer');
+  const tx = px < cx ? px+10 : px-130;
+  const ty = py < cy ? py+10 : py-42;
+  document.getElementById('tip-t1').setAttribute('x',tx+8);
+  document.getElementById('tip-t1').setAttribute('y',ty+16);
+  document.getElementById('tip-t1').textContent = axis;
+  document.getElementById('tip-t1').setAttribute('fill',color);
+  document.getElementById('tip-t2').setAttribute('x',tx+8);
+  document.getElementById('tip-t2').setAttribute('y',ty+30);
+  document.getElementById('tip-t2').textContent = `${era}: ${val}`;
+  document.getElementById('tip-bg').setAttribute('x',tx);
+  document.getElementById('tip-bg').setAttribute('y',ty);
+  document.getElementById('tip-bg').setAttribute('width','120');
+  document.getElementById('tip-bg').setAttribute('height','38');
+  g.setAttribute('display','');
+}
+function hideTip() { document.getElementById('tip-layer').setAttribute('display','none'); }
+
+// Title inside chart
+function drawTitle() {
+  const existing = document.getElementById('chart-title');
+  if(existing) existing.remove();
+  const t = document.createElementNS(ns,'text');
+  t.setAttribute('id','chart-title');
+  t.setAttribute('x',cx); t.setAttribute('y',30);
+  t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-size','13'); t.setAttribute('fill','#333');
+  t.setAttribute('font-family','Arial,sans-serif'); t.setAttribute('font-weight','bold');
+  t.textContent = `Average ${currentPos === 'C' ? 'Center' : 'Power Forward'} — Normalized per 36 min`;
+  svg.appendChild(t);
+}
+
+function setPos(pos) {
+  currentPos = pos;
+  document.getElementById('btnC').classList.toggle('active', pos==='C');
+  document.getElementById('btnPF').classList.toggle('active', pos==='PF');
+  drawPolygons();
+  drawTitle();
+}
+
+function toggleEra(era) {
+  visibleEras[era] = !visibleEras[era];
+  const map = {'90s':'btn90','10s':'btn10','today':'btnToday'};
+  document.getElementById(map[era]).classList.toggle('active', visibleEras[era]);
+  drawPolygons();
+}
+
+drawGrid();
+drawAxisLabels();
+drawPolygons();
+drawTitle();
+
+// Center label
+const centerDot = document.createElementNS(ns,'circle');
+centerDot.setAttribute('cx',cx); centerDot.setAttribute('cy',cy);
+centerDot.setAttribute('r','3'); centerDot.setAttribute('fill','#ccc');
+svg.appendChild(centerDot);
+</script>
+</body>
+</html>

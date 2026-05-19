@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Visual 2 — Where Shots Come From</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', serif;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 40px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .subtitle {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #555;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #333;
+  }
+  input[type=range] {
+    width: 300px;
+    accent-color: #1a3a6b;
+  }
+  #yearLabel {
+    font-weight: bold;
+    font-size: 15px;
+    color: #1a3a6b;
+    min-width: 60px;
+  }
+  .chart-wrap {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+  svg#court {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+  }
+  .legend-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 8px;
+  }
+  .legend-section {
+    font-family: Arial, sans-serif;
+  }
+  .legend-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: #444;
+  }
+  .legend-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    flex-shrink: 0;
+  }
+  .legend-circle-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    color: #444;
+  }
+  .annotation-box {
+    background: #fff3f3;
+    border: 1.5px solid #c0392b;
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #333;
+    max-width: 180px;
+    line-height: 1.5;
+  }
+  .annotation-box strong { color: #c0392b; }
+  .source {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #888;
+    margin-top: 14px;
+    text-align: left;
+    width: 100%;
+    max-width: 820px;
+  }
+  .note {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+    text-align: left;
+    width: 100%;
+    max-width: 820px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<h1>Visual 2 — Where Shots Come From</h1>
+<p class="subtitle">League-average shot frequency and efficiency (eFG%) by court zone, 2010–2024</p>
+
+<div class="controls">
+  <span>Season:</span>
+  <input type="range" id="slider" min="2010" max="2024" value="2010" step="1" oninput="update(+this.value)">
+  <span id="yearLabel">2009–10</span>
+</div>
+
+<div class="chart-wrap">
+  <svg id="court" width="560" height="490" viewBox="0 0 560 490"></svg>
+
+  <div class="legend-wrap">
+    <div class="legend-section">
+      <div class="legend-title">Shot Frequency</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#1a3a6b;"></div> Very High</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#2e6fbd;"></div> High</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#7ab3e0;"></div> Medium</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#c8dff3;"></div> Low</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#efefef;border-color:#ccc;"></div> Avoided</div>
+    </div>
+
+    <div class="legend-section">
+      <div class="legend-title">Bubble Size</div>
+      <div class="legend-circle-row">
+        <svg width="30" height="30"><circle cx="15" cy="15" r="12" fill="#7ab3e055" stroke="#2e6fbd" stroke-width="1.2"/></svg>
+        <span>High volume zone</span>
+      </div>
+      <div class="legend-circle-row">
+        <svg width="20" height="20"><circle cx="10" cy="10" r="6" fill="#7ab3e055" stroke="#2e6fbd" stroke-width="1.2"/></svg>
+        <span>Low volume zone</span>
+      </div>
+    </div>
+
+    <div id="annotationBox" class="annotation-box">
+      <strong>2009–10 baseline:</strong><br>
+      Midrange shots dominated. Corner 3s were underutilized. Paint was king.
+    </div>
+  </div>
+</div>
+
+<div class="source">Proposal static mock-up &nbsp;·&nbsp; Final version: D3 hexbin with real shot-zone CSV data &nbsp;·&nbsp; Sources: Basketball Reference / team_stats_advanced_rs.csv</div>
+<div class="note">Hover interaction, animated transitions, and eFG% tooltips will be implemented in D3.js for the final deliverable.</div>
+
+<script>
+const svg = document.getElementById('court');
+const W = 560, H = 490;
+const PAD_L = 40, PAD_R = 40, PAD_T = 30, PAD_B = 80;
+const CW = W - PAD_L - PAD_R; // court width
+const CH = H - PAD_T - PAD_B; // court height (half court)
+
+// Court is 94ft x 50ft, we show half = 47ft deep
+const ftToX = ft => PAD_L + (ft / 50) * CW;
+const ftToY = ft => PAD_T + (ft / 47) * CH;
+
+// Draw court lines
+function drawCourt() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const g = document.createElementNS(ns, 'g');
+  g.setAttribute('id', 'court-lines');
+  g.setAttribute('fill', 'none');
+  g.setAttribute('stroke', '#999');
+  g.setAttribute('stroke-width', '1.5');
+
+  const line = (x1,y1,x2,y2,extra='') => {
+    const el = document.createElementNS(ns, 'line');
+    el.setAttribute('x1', ftToX(x1)); el.setAttribute('y1', ftToY(y1));
+    el.setAttribute('x2', ftToX(x2)); el.setAttribute('y2', ftToY(y2));
+    if(extra) el.setAttribute('stroke', extra);
+    g.appendChild(el); return el;
+  };
+  const rect = (x,y,w,h,opts={}) => {
+    const el = document.createElementNS(ns, 'rect');
+    el.setAttribute('x', ftToX(x)); el.setAttribute('y', ftToY(y));
+    el.setAttribute('width', ftToX(x+w)-ftToX(x)); el.setAttribute('height', ftToY(y+h)-ftToY(y));
+    el.setAttribute('fill', opts.fill||'none'); el.setAttribute('stroke', opts.stroke||'#999');
+    el.setAttribute('stroke-width', '1.5');
+    g.appendChild(el); return el;
+  };
+  const arc = (cx,cy,r,start,end,opts={}) => {
+    const el = document.createElementNS(ns, 'path');
+    const x1 = ftToX(cx) + (ftToX(cx+r)-ftToX(cx)) * Math.cos(start);
+    const y1 = ftToY(cy) + (ftToY(cy+r)-ftToY(cy)) * Math.sin(start);
+    const x2 = ftToX(cx) + (ftToX(cx+r)-ftToX(cx)) * Math.cos(end);
+    const y2 = ftToY(cy) + (ftToY(cy+r)-ftToY(cy)) * Math.sin(end);
+    const rx = ftToX(cx+r)-ftToX(cx);
+    const ry = ftToY(cy+r)-ftToY(cy);
+    el.setAttribute('d', `M ${x1} ${y1} A ${rx} ${ry} 0 0 1 ${x2} ${y2}`);
+    el.setAttribute('fill','none');
+    el.setAttribute('stroke', opts.stroke||'#999');
+    el.setAttribute('stroke-width', opts.sw||'1.5');
+    g.appendChild(el);
+  };
+
+  // Baseline + sidelines
+  rect(0, 0, 50, 47, {fill:'#fafafa'});
+
+  // Paint / lane (16ft wide, 19ft deep, centered at x=25)
+  rect(17, 0, 16, 19);
+
+  // Free throw circle
+  const ftCircleX = ftToX(25), ftCircleY = ftToY(19);
+  const ftR = ftToX(25+6) - ftToX(25);
+  const ftEl = document.createElementNS(ns, 'circle');
+  ftEl.setAttribute('cx', ftCircleX); ftEl.setAttribute('cy', ftCircleY);
+  ftEl.setAttribute('r', ftR);
+  ftEl.setAttribute('fill','none'); ftEl.setAttribute('stroke','#999'); ftEl.setAttribute('stroke-width','1.5');
+  g.appendChild(ftEl);
+
+  // Basket
+  const bx = ftToX(25), by = ftToY(4.75);
+  const basket = document.createElementNS(ns, 'circle');
+  basket.setAttribute('cx', bx); basket.setAttribute('cy', by);
+  basket.setAttribute('r', '5');
+  basket.setAttribute('fill','#333'); basket.setAttribute('stroke','none');
+  g.appendChild(basket);
+
+  // Backboard
+  line(22, 4, 28, 4, '#333');
+
+  // 3-point arc (23.75ft from basket center, with corner 3s at 22ft)
+  // Corner 3 lines
+  line(3, 0, 3, 14);
+  line(47, 0, 47, 14);
+
+  // Arc from corner to corner: basket at (25, 4.75), radius 23.75ft
+  const bkX = ftToX(25), bkY = ftToY(4.75);
+  const arcRx = ftToX(25+23.75)-ftToX(25);
+  const arcRy = ftToY(4.75+23.75)-ftToY(4.75);
+  // Start at corner (3, 14) and end at (47, 14)
+  const startX = ftToX(3), startY = ftToY(14);
+  const endX = ftToX(47), endY = ftToY(14);
+  const arcPath = document.createElementNS(ns, 'path');
+  arcPath.setAttribute('d', `M ${startX} ${startY} A ${arcRx} ${arcRy} 0 0 1 ${endX} ${endY}`);
+  arcPath.setAttribute('fill','none'); arcPath.setAttribute('stroke','#999'); arcPath.setAttribute('stroke-width','1.5');
+  g.appendChild(arcPath);
+
+  svg.insertBefore(g, svg.firstChild);
+}
+
+// Zone data: each zone has {id, label, x(ft), y(ft), data by year}
+// data[year] = {freq: 0-1, efg: 0-1}
+const zones = [
+  {
+    id:'paint', label:'Paint / Restricted Area', x:25, y:8,
+    data: {
+      2010:{freq:0.95,efg:0.60,note:'Most efficient zone'},
+      2012:{freq:0.93,efg:0.61,note:''},
+      2014:{freq:0.90,efg:0.62,note:''},
+      2016:{freq:0.88,efg:0.63,note:''},
+      2018:{freq:0.87,efg:0.64,note:''},
+      2020:{freq:0.86,efg:0.65,note:''},
+      2022:{freq:0.85,efg:0.65,note:''},
+      2024:{freq:0.83,efg:0.66,note:''},
+    }
+  },
+  {
+    id:'midrange_center', label:'Mid-Range (Center)', x:25, y:21,
+    data: {
+      2010:{freq:0.70,efg:0.40,note:'High volume, low efficiency'},
+      2012:{freq:0.65,efg:0.40,note:''},
+      2014:{freq:0.55,efg:0.40,note:''},
+      2016:{freq:0.40,efg:0.41,note:'Declining fast'},
+      2018:{freq:0.28,efg:0.41,note:''},
+      2020:{freq:0.20,efg:0.42,note:''},
+      2022:{freq:0.15,efg:0.42,note:''},
+      2024:{freq:0.12,efg:0.43,note:'Nearly extinct'},
+    }
+  },
+  {
+    id:'midrange_left', label:'Mid-Range (Left Wing)', x:12, y:19,
+    data: {
+      2010:{freq:0.60,efg:0.39,note:''},
+      2012:{freq:0.55,efg:0.39,note:''},
+      2014:{freq:0.45,efg:0.39,note:''},
+      2016:{freq:0.32,efg:0.40,note:''},
+      2018:{freq:0.22,efg:0.40,note:''},
+      2020:{freq:0.16,efg:0.41,note:''},
+      2022:{freq:0.13,efg:0.41,note:''},
+      2024:{freq:0.10,efg:0.41,note:''},
+    }
+  },
+  {
+    id:'midrange_right', label:'Mid-Range (Right Wing)', x:38, y:19,
+    data: {
+      2010:{freq:0.60,efg:0.39,note:''},
+      2012:{freq:0.55,efg:0.39,note:''},
+      2014:{freq:0.45,efg:0.39,note:''},
+      2016:{freq:0.32,efg:0.40,note:''},
+      2018:{freq:0.22,efg:0.40,note:''},
+      2020:{freq:0.16,efg:0.41,note:''},
+      2022:{freq:0.13,efg:0.41,note:''},
+      2024:{freq:0.10,efg:0.41,note:''},
+    }
+  },
+  {
+    id:'corner3_left', label:'Corner 3 (Left)', x:2.5, y:7,
+    data: {
+      2010:{freq:0.30,efg:0.58,note:'Underutilized'},
+      2012:{freq:0.40,efg:0.59,note:''},
+      2014:{freq:0.52,efg:0.59,note:''},
+      2016:{freq:0.65,efg:0.60,note:'Growing fast'},
+      2018:{freq:0.72,efg:0.60,note:''},
+      2020:{freq:0.78,efg:0.61,note:''},
+      2022:{freq:0.82,efg:0.61,note:''},
+      2024:{freq:0.85,efg:0.62,note:'Premier zone'},
+    }
+  },
+  {
+    id:'corner3_right', label:'Corner 3 (Right)', x:47.5, y:7,
+    data: {
+      2010:{freq:0.30,efg:0.58,note:''},
+      2012:{freq:0.40,efg:0.59,note:''},
+      2014:{freq:0.52,efg:0.59,note:''},
+      2016:{freq:0.65,efg:0.60,note:''},
+      2018:{freq:0.72,efg:0.60,note:''},
+      2020:{freq:0.78,efg:0.61,note:''},
+      2022:{freq:0.82,efg:0.61,note:''},
+      2024:{freq:0.85,efg:0.62,note:''},
+    }
+  },
+  {
+    id:'wing3_left', label:'Wing 3 (Left)', x:8, y:28,
+    data: {
+      2010:{freq:0.35,efg:0.35,note:''},
+      2012:{freq:0.42,efg:0.35,note:''},
+      2014:{freq:0.52,efg:0.36,note:''},
+      2016:{freq:0.62,efg:0.37,note:''},
+      2018:{freq:0.70,efg:0.37,note:''},
+      2020:{freq:0.76,efg:0.38,note:''},
+      2022:{freq:0.80,efg:0.38,note:''},
+      2024:{freq:0.83,efg:0.38,note:''},
+    }
+  },
+  {
+    id:'wing3_right', label:'Wing 3 (Right)', x:42, y:28,
+    data: {
+      2010:{freq:0.35,efg:0.35,note:''},
+      2012:{freq:0.42,efg:0.35,note:''},
+      2014:{freq:0.52,efg:0.36,note:''},
+      2016:{freq:0.62,efg:0.37,note:''},
+      2018:{freq:0.70,efg:0.37,note:''},
+      2020:{freq:0.76,efg:0.38,note:''},
+      2022:{freq:0.80,efg:0.38,note:''},
+      2024:{freq:0.83,efg:0.38,note:''},
+    }
+  },
+  {
+    id:'top3', label:'Top of the Key 3', x:25, y:32,
+    data: {
+      2010:{freq:0.28,efg:0.34,note:''},
+      2012:{freq:0.35,efg:0.34,note:''},
+      2014:{freq:0.45,efg:0.35,note:''},
+      2016:{freq:0.58,efg:0.36,note:'Curry effect'},
+      2018:{freq:0.68,efg:0.36,note:''},
+      2020:{freq:0.74,efg:0.37,note:''},
+      2022:{freq:0.79,efg:0.37,note:''},
+      2024:{freq:0.82,efg:0.37,note:''},
+    }
+  },
+];
+
+function freqColor(f) {
+  if(f > 0.80) return '#1a3a6b';
+  if(f > 0.60) return '#2e6fbd';
+  if(f > 0.40) return '#7ab3e0';
+  if(f > 0.20) return '#c8dff3';
+  return '#e0e0e0';
+}
+
+function lerp(a, b, t) { return a + (b-a)*t; }
+
+function getZoneData(zone, year) {
+  const years = Object.keys(zone.data).map(Number).sort((a,b)=>a-b);
+  let lo = years[0], hi = years[years.length-1];
+  for(let i=0;i<years.length-1;i++) {
+    if(year >= years[i] && year <= years[i+1]) { lo=years[i]; hi=years[i+1]; break; }
+  }
+  if(lo===hi) return zone.data[lo];
+  const t = (year-lo)/(hi-lo);
+  const d0 = zone.data[lo], d1 = zone.data[hi];
+  return { freq: lerp(d0.freq,d1.freq,t), efg: lerp(d0.efg,d1.efg,t), note: d1.note||d0.note };
+}
+
+function getMaxR() { return ftToX(25+3.5)-ftToX(25); }
+
+let zoneEls = {};
+const ns = 'http://www.w3.org/2000/svg';
+
+function initZones() {
+  const g = document.createElementNS(ns, 'g');
+  g.setAttribute('id', 'zones');
+  zones.forEach(z => {
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', ftToX(z.x));
+    circle.setAttribute('cy', ftToY(z.y));
+    circle.setAttribute('stroke', '#1a3a6b');
+    circle.setAttribute('stroke-width', '1');
+    circle.setAttribute('opacity', '0.85');
+    zoneEls[z.id] = circle;
+    g.appendChild(circle);
+
+    // Tooltip group
+    const tip = document.createElementNS(ns, 'g');
+    tip.setAttribute('id','tip-'+z.id);
+    tip.setAttribute('display','none');
+    const tipRect = document.createElementNS(ns, 'rect');
+    tipRect.setAttribute('rx','3'); tipRect.setAttribute('ry','3');
+    tipRect.setAttribute('fill','#fff'); tipRect.setAttribute('stroke','#1a3a6b');
+    tipRect.setAttribute('stroke-width','1');
+    const tipText1 = document.createElementNS(ns, 'text');
+    tipText1.setAttribute('font-family','Arial,sans-serif');
+    tipText1.setAttribute('font-size','10');
+    tipText1.setAttribute('fill','#111');
+    const tipText2 = document.createElementNS(ns, 'text');
+    tipText2.setAttribute('font-family','Arial,sans-serif');
+    tipText2.setAttribute('font-size','10');
+    tipText2.setAttribute('fill','#333');
+    tip.appendChild(tipRect); tip.appendChild(tipText1); tip.appendChild(tipText2);
+    tip.setAttribute('id','tip-'+z.id);
+    g.appendChild(tip);
+
+    circle.addEventListener('mouseenter', function(e) {
+      const d = getZoneData(z, currentYear);
+      const tip = document.getElementById('tip-'+z.id);
+      const cx = +circle.getAttribute('cx'), cy = +circle.getAttribute('cy');
+      const tx = cx < 300 ? cx+10 : cx-100;
+      const ty = cy < 200 ? cy+10 : cy-40;
+      tipText1.setAttribute('x', tx+6); tipText1.setAttribute('y', ty+14);
+      tipText1.textContent = z.label;
+      tipText2.setAttribute('x', tx+6); tipText2.setAttribute('y', ty+26);
+      tipText2.textContent = `Freq: ${(d.freq*100).toFixed(0)}%  |  eFG%: ${(d.efg*100).toFixed(1)}%`;
+      const w = Math.max(tipText1.textContent.length, tipText2.textContent.length) * 5.8 + 12;
+      tipRect.setAttribute('x', tx); tipRect.setAttribute('y', ty);
+      tipRect.setAttribute('width', w); tipRect.setAttribute('height', 34);
+      tip.setAttribute('display','');
+    });
+    circle.addEventListener('mouseleave', function() {
+      document.getElementById('tip-'+z.id).setAttribute('display','none');
+    });
+    circle.style.cursor = 'pointer';
+  });
+  svg.appendChild(g);
+}
+
+let currentYear = 2010;
+
+function update(year) {
+  currentYear = year;
+  const season = `${year-1}–${String(year).slice(-2)}`;
+  document.getElementById('yearLabel').textContent = season;
+  const maxR = getMaxR();
+  zones.forEach(z => {
+    const d = getZoneData(z, year);
+    const r = Math.max(4, d.freq * maxR);
+    const el = zoneEls[z.id];
+    el.setAttribute('r', r);
+    el.setAttribute('fill', freqColor(d.freq));
+  });
+
+  // Update annotation
+  const box = document.getElementById('annotationBox');
+  if(year <= 2013) {
+    box.innerHTML = `<strong>${year-1}–${String(year).slice(-2)} baseline:</strong><br>Midrange shots dominated. Corner 3s were underutilized. Paint was king.`;
+  } else if(year <= 2016) {
+    box.innerHTML = `<strong>Transition era (${year-1}–${String(year).slice(-2)}):</strong><br>Midrange usage dropping. Corner 3 volume rising sharply. Analytics taking hold.`;
+  } else if(year <= 2019) {
+    box.innerHTML = `<strong>Curry era (${year-1}–${String(year).slice(-2)}):</strong><br>3-point revolution in full swing. Midrange nearly extinct. Corner 3 is now a premium shot.`;
+  } else {
+    box.innerHTML = `<strong>Modern NBA (${year-1}–${String(year).slice(-2)}):</strong><br>Midrange nearly gone. All 3-point zones saturated. Only corner 3 and paint remain truly efficient.`;
+  }
+
+  // Curry era shading
+  const existing = document.getElementById('curry-shade');
+  if(existing) existing.remove();
+  if(year >= 2016) {
+    const shade = document.createElementNS(ns, 'rect');
+    shade.setAttribute('id','curry-shade');
+    shade.setAttribute('x', PAD_L); shade.setAttribute('y', PAD_T);
+    shade.setAttribute('width', CW); shade.setAttribute('height', CH);
+    shade.setAttribute('fill','#ffcccc');
+    shade.setAttribute('opacity','0.08');
+    shade.setAttribute('pointer-events','none');
+    svg.insertBefore(shade, document.getElementById('zones'));
+  }
+}
+
+drawCourt();
+initZones();
+update(2010);
+
+// Add axes labels
+const labelG = document.createElementNS(ns, 'g');
+const xlabel = document.createElementNS(ns, 'text');
+xlabel.setAttribute('x', W/2); xlabel.setAttribute('y', H-10);
+xlabel.setAttribute('text-anchor','middle');
+xlabel.setAttribute('font-family','Arial,sans-serif');
+xlabel.setAttribute('font-size','11');
+xlabel.setAttribute('fill','#888');
+xlabel.textContent = 'Half court — left to right: 50ft';
+labelG.appendChild(xlabel);
+svg.appendChild(labelG);
+</script>
+</body>
+</html>

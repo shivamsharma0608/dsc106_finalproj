@@ -22,6 +22,9 @@
       --border: #ddd;
       --white:  #ffffff;
       --court-bg: #fdf8f0;
+      --peach:   #f5b78d;
+      --peach-2: #e89968;
+      --green-2: #5fa363;
     }
 
     html { scroll-behavior: smooth; }
@@ -256,6 +259,173 @@
       font-size: 12px; line-height: 1.8;
     }
     footer a { color: #aaa; }
+
+    /* ── VISUAL 5 ──────────────────────────────────────────────────────────── */
+
+    .v5-chart-sub {
+      font-size: 13px; color: var(--muted); margin: -10px 0 22px;
+    }
+    .v5-controls-row {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 22px;
+      align-items: end; margin-bottom: 24px;
+      padding-bottom: 22px; border-bottom: 1px solid var(--border);
+    }
+    @media (max-width: 820px) { .v5-controls-row { grid-template-columns: 1fr; } }
+    .v5-ctrl-block label {
+      display: block;
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: 700; color: var(--muted); margin-bottom: 6px;
+    }
+    .v5-player-select {
+      width: 100%;
+      padding: 9px 12px; font-size: 14px; font-weight: 600;
+      font-family: 'Source Sans 3', sans-serif;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      background: white; color: var(--ink); cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .v5-player-select:hover, .v5-player-select:focus { border-color: var(--navy); outline: none; }
+    .v5-player-select.modern-select:focus { border-color: var(--green); }
+
+    .v5-toggle-group {
+      display: inline-flex; background: var(--light);
+      border-radius: 6px; padding: 3px; border: 1px solid var(--border);
+    }
+    .v5-toggle-btn {
+      padding: 7px 14px; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.03em;
+      border: none; background: transparent; color: var(--muted);
+      cursor: pointer; border-radius: 4px;
+      font-family: 'Source Sans 3', sans-serif;
+      transition: all 0.18s;
+    }
+    .v5-toggle-btn.active {
+      background: var(--navy); color: white;
+      box-shadow: 0 1px 3px rgba(26,58,107,0.3);
+    }
+    .v5-toggle-btn.active.adjusted { background: var(--peach-2); }
+
+    .v5-main-grid {
+      display: grid; grid-template-columns: 1fr 280px; gap: 28px;
+      align-items: flex-start;
+    }
+    @media (max-width: 900px) { .v5-main-grid { grid-template-columns: 1fr; } }
+
+    #v5-chart-wrap { min-width: 0; }
+    #v5-chart { width: 100%; height: 380px; display: block; }
+    .v5-bar-label {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 12px; font-weight: 700;
+    }
+    .v5-axis-label {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 13px; font-weight: 700; fill: var(--ink);
+      text-anchor: middle;
+    }
+    .v5-axis-tick {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 10px; fill: #aaa;
+    }
+    .v5-grid-line { stroke: #eee; stroke-width: 1; }
+    .v5-bar { cursor: pointer; transition: opacity 0.15s; }
+    .v5-bar:hover { opacity: 0.82; }
+
+    .v5-side-panel { display: flex; flex-direction: column; gap: 14px; }
+    .v5-player-card {
+      border-radius: 7px; padding: 14px 16px;
+      background: white;
+      border-left: 4px solid var(--navy);
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .v5-player-card.modern { border-left-color: var(--green); }
+    .v5-player-card .pc-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px; font-weight: 700; color: var(--ink);
+      margin-bottom: 3px; line-height: 1.2;
+    }
+    .v5-player-card .pc-meta {
+      font-size: 12px; color: var(--muted); margin-bottom: 8px;
+    }
+    .v5-player-card .pc-season {
+      display: inline-block;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+      background: var(--navy); color: white;
+      padding: 3px 9px; border-radius: 4px;
+    }
+    .v5-player-card.modern .pc-season { background: var(--green); }
+
+    /* V5 callout variants */
+    .callout-box.peach { background: #fff5ed; border-left: 4px solid var(--peach-2); color: #5a3a20; }
+    .callout-box.peach strong { color: var(--peach-2); }
+
+    .v5-slider-row {
+      margin-top: 22px; padding: 18px 20px;
+      background: var(--light); border-radius: 7px;
+      display: grid; grid-template-columns: auto 1fr auto; gap: 16px;
+      align-items: center;
+    }
+    .v5-slider-row .sl-lbl {
+      font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      font-weight: 700; color: var(--muted);
+    }
+    .v5-slider-row input[type=range] {
+      width: 100%; accent-color: var(--navy); cursor: pointer; height: 6px;
+    }
+    .v5-slider-row .sl-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px; font-weight: 700; color: var(--navy);
+      min-width: 78px; text-align: right;
+    }
+
+    .v5-chart-legend {
+      display: flex; gap: 18px; justify-content: center;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .v5-chip {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #444; font-weight: 600;
+    }
+    .v5-chip .sw { width: 14px; height: 14px; border-radius: 3px; }
+    .v5-chip.legend-raw .sw   { background: var(--navy); }
+    .v5-chip.legend-adj .sw   { background: var(--peach-2); }
+    .v5-chip.modern .sw       { background: var(--green); }
+
+    /* Tooltip pieces for V5 */
+    #tooltip .tt-calc {
+      margin-top: 6px; padding-top: 6px;
+      border-top: 1px dashed #ddd;
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 11.5px; color: #555;
+    }
+    #tooltip .tt-tag {
+      display: inline-block; font-size: 10px;
+      padding: 1px 6px; border-radius: 3px;
+      font-weight: 700; letter-spacing: 0.04em;
+      margin-right: 4px;
+    }
+    #tooltip .tt-tag.legend  { background: var(--navy);     color: white; }
+    #tooltip .tt-tag.adj     { background: var(--peach-2);  color: white; }
+    #tooltip .tt-tag.modern  { background: var(--green);    color: white; }
+
+    .v5-verdict-banner {
+      margin-top: 22px; padding: 16px 20px;
+      background: linear-gradient(135deg, #1a3a6b 0%, #2e6fbd 100%);
+      border-radius: 7px; color: white;
+      display: grid; grid-template-columns: auto 1fr; gap: 16px;
+      align-items: center;
+    }
+    .v5-verdict-icon {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px; line-height: 1; color: var(--gold);
+    }
+    .v5-verdict-text { line-height: 1.5; }
+    .v5-verdict-text strong {
+      display: block; font-family: 'Playfair Display', serif;
+      font-size: 16px; margin-bottom: 2px;
+    }
+    .v5-verdict-text span { font-size: 13.5px; color: #cdd8e8; }
   </style>
 </head>
 <body>
@@ -417,14 +587,85 @@
 <section id="s5">
   <div class="section-tag therefore">THEREFORE — Section 5 of 6</div>
   <h2 class="section-title">What if the legends played today?</h2>
-  <p class="section-body">The 90s' greatest big men were dominant by any era's standard — but their raw stats don't capture their true dominance when you apply modern pace and efficiency context. Some look even better. Some look like they'd struggle to get minutes.</p>
+  <p class="section-body">The 90s' greatest players were dominant by any era's standard — but pace was slower, efficiency was lower, and 3-point shooting was a tactical afterthought. Pick a legend, pick a modern star, and see how the matchup looks once the game is on equal footing.</p>
 
   <div class="chart-card">
     <div class="chart-title">If They Played Today — Era-Adjusted Stat Translator</div>
-    <div class="placeholder-viz">
-      <div class="ph-icon">⏳</div>
-      <div class="ph-title">Visual 5 — Era Translation Tool</div>
-      <div class="ph-note">Dropdown: Shaq, Hakeem, Malone, Stockton, Reggie Miller. Side-by-side bar chart animates between raw and era-adjusted stats.<br><br><em>Coming in final deliverable.</em></div>
+    <div class="v5-chart-sub">Compare a 90s legend's career-peak stats — raw, or normalized to today's pace and efficiency — against a modern star at their peak.</div>
+
+    <!-- Controls -->
+    <div class="v5-controls-row">
+      <div class="v5-ctrl-block">
+        <label>The Legend (1989–2002)</label>
+        <select id="v5-legend-select" class="v5-player-select legend-select">
+          <option value="shaq">Shaquille O'Neal — Center</option>
+          <option value="hakeem">Hakeem Olajuwon — Center</option>
+          <option value="malone">Karl Malone — Power Forward</option>
+          <option value="stockton">John Stockton — Point Guard</option>
+          <option value="miller">Reggie Miller — Shooting Guard</option>
+        </select>
+      </div>
+      <div class="v5-ctrl-block">
+        <label>The Modern Star (2015–2024)</label>
+        <select id="v5-modern-select" class="v5-player-select modern-select">
+          <option value="embiid">Joel Embiid — Center</option>
+          <option value="jokic">Nikola Jokić — Center</option>
+          <option value="giannis">Giannis Antetokounmpo — PF/C</option>
+          <option value="lebron">LeBron James — Forward</option>
+          <option value="curry">Stephen Curry — Point Guard</option>
+          <option value="luka">Luka Dončić — Guard</option>
+        </select>
+      </div>
+      <div class="v5-ctrl-block">
+        <label>Legend's Stats</label>
+        <div class="v5-toggle-group">
+          <button class="v5-toggle-btn active" id="v5-tg-raw">Raw</button>
+          <button class="v5-toggle-btn adjusted" id="v5-tg-adj">Era-Adjusted</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart + Side Panel -->
+    <div class="v5-main-grid">
+      <div id="v5-chart-wrap">
+        <div class="v5-chart-legend">
+          <div class="v5-chip legend-raw" id="v5-chip-raw"><div class="sw"></div><span id="v5-chip-raw-lbl">Legend — Raw</span></div>
+          <div class="v5-chip legend-adj" id="v5-chip-adj" style="display:none;"><div class="sw"></div><span id="v5-chip-adj-lbl">Legend — Adjusted</span></div>
+          <div class="v5-chip modern"><div class="sw"></div><span id="v5-chip-modern-lbl">Modern Star</span></div>
+        </div>
+        <svg id="v5-chart" viewBox="0 0 720 380"></svg>
+
+        <div class="v5-slider-row">
+          <span class="sl-lbl">Legend's Career Year</span>
+          <input type="range" id="v5-year-slider" min="0" max="3" step="1" value="0" />
+          <span class="sl-val" id="v5-year-val">—</span>
+        </div>
+      </div>
+
+      <div class="v5-side-panel">
+        <div class="v5-player-card" id="v5-legend-card">
+          <div class="pc-name" id="v5-legend-name">—</div>
+          <div class="pc-meta" id="v5-legend-meta">—</div>
+          <div class="pc-season" id="v5-legend-season">—</div>
+        </div>
+        <div class="v5-player-card modern" id="v5-modern-card">
+          <div class="pc-name" id="v5-modern-name">—</div>
+          <div class="pc-meta" id="v5-modern-meta">—</div>
+          <div class="pc-season" id="v5-modern-season">—</div>
+        </div>
+        <div class="callout-box peach" id="v5-methodology-box">
+          <strong>Era Adjustment Method</strong>
+          <span id="v5-methodology-text">Toggle "Era-Adjusted" to apply pace and efficiency normalization based on Basketball Reference league averages.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="v5-verdict-banner" id="v5-verdict-banner">
+      <div class="v5-verdict-icon">★</div>
+      <div class="v5-verdict-text">
+        <strong id="v5-verdict-title">The Verdict</strong>
+        <span id="v5-verdict-body">Loading comparison...</span>
+      </div>
     </div>
   </div>
 </section>
@@ -908,6 +1149,405 @@ function castVote(btn, choice) {
   drawGrid();
   drawLabels();
   drawPolygons();
+})();
+
+// VISUAL 5 — Era Translator (player-vs-player era adjustment)
+
+(function() {
+  /* ── Historical legends (multiple peak seasons each) ────────────────── */
+  const LEGENDS = {
+    shaq: {
+      name: "Shaquille O'Neal", pos: "Center",
+      team: "Orlando / L.A. Lakers", accent: "#552583",
+      seasons: [
+        { year:"1994-95", PPG:29.3, RPG:11.4, APG:2.7, BPG:2.4, TS:0.583, USG:31.4, PACE:92.9, LG_TS:0.529 },
+        { year:"1997-98", PPG:28.3, RPG:11.4, APG:2.4, BPG:2.4, TS:0.599, USG:32.1, PACE:90.3, LG_TS:0.522 },
+        { year:"1999-00", PPG:29.7, RPG:13.6, APG:3.8, BPG:3.0, TS:0.578, USG:33.1, PACE:93.1, LG_TS:0.503 },
+        { year:"2000-01", PPG:28.7, RPG:12.7, APG:3.7, BPG:2.8, TS:0.587, USG:32.4, PACE:91.3, LG_TS:0.518 },
+      ],
+    },
+    hakeem: {
+      name: "Hakeem Olajuwon", pos: "Center",
+      team: "Houston Rockets", accent: "#CE1141",
+      seasons: [
+        { year:"1992-93", PPG:26.1, RPG:13.0, APG:3.5, BPG:4.2, TS:0.554, USG:30.2, PACE:96.8, LG_TS:0.535 },
+        { year:"1993-94", PPG:27.3, RPG:11.9, APG:3.6, BPG:3.7, TS:0.586, USG:31.6, PACE:95.1, LG_TS:0.529 },
+        { year:"1994-95", PPG:27.8, RPG:10.8, APG:3.5, BPG:3.4, TS:0.587, USG:33.1, PACE:92.9, LG_TS:0.529 },
+        { year:"1995-96", PPG:26.9, RPG:10.9, APG:3.6, BPG:2.9, TS:0.547, USG:31.4, PACE:91.8, LG_TS:0.531 },
+      ],
+    },
+    malone: {
+      name: "Karl Malone", pos: "Power Forward",
+      team: "Utah Jazz", accent: "#00471B",
+      seasons: [
+        { year:"1989-90", PPG:31.0, RPG:11.1, APG:2.8, BPG:0.6, TS:0.585, USG:31.0, PACE:98.3, LG_TS:0.541 },
+        { year:"1996-97", PPG:27.4, RPG:9.9, APG:4.5, BPG:0.6, TS:0.612, USG:28.4, PACE:90.1, LG_TS:0.535 },
+        { year:"1997-98", PPG:27.0, RPG:10.3, APG:3.9, BPG:0.9, TS:0.600, USG:29.5, PACE:90.3, LG_TS:0.522 },
+        { year:"1999-00", PPG:25.5, RPG:9.5, APG:3.7, BPG:0.9, TS:0.611, USG:27.4, PACE:93.1, LG_TS:0.503 },
+      ],
+    },
+    stockton: {
+      name: "John Stockton", pos: "Point Guard",
+      team: "Utah Jazz", accent: "#00471B",
+      seasons: [
+        { year:"1989-90", PPG:17.2, RPG:2.7, APG:14.5, BPG:0.3, TS:0.608, USG:22.4, PACE:98.3, LG_TS:0.541 },
+        { year:"1990-91", PPG:17.2, RPG:2.9, APG:14.2, BPG:0.2, TS:0.628, USG:21.6, PACE:97.8, LG_TS:0.540 },
+        { year:"1994-95", PPG:15.7, RPG:2.7, APG:12.3, BPG:0.2, TS:0.625, USG:19.5, PACE:92.9, LG_TS:0.529 },
+        { year:"1996-97", PPG:14.4, RPG:2.9, APG:10.5, BPG:0.2, TS:0.620, USG:17.7, PACE:90.1, LG_TS:0.535 },
+      ],
+    },
+    miller: {
+      name: "Reggie Miller", pos: "Shooting Guard",
+      team: "Indiana Pacers", accent: "#FDBB30",
+      seasons: [
+        { year:"1989-90", PPG:24.6, RPG:3.6, APG:3.7, BPG:0.4, TS:0.640, USG:25.4, PACE:98.3, LG_TS:0.541 },
+        { year:"1993-94", PPG:19.9, RPG:3.0, APG:2.9, BPG:0.3, TS:0.600, USG:24.0, PACE:95.1, LG_TS:0.529 },
+        { year:"1994-95", PPG:19.6, RPG:2.6, APG:2.9, BPG:0.2, TS:0.633, USG:22.1, PACE:92.9, LG_TS:0.529 },
+        { year:"1997-98", PPG:19.5, RPG:3.4, APG:2.7, BPG:0.2, TS:0.627, USG:21.5, PACE:90.3, LG_TS:0.522 },
+      ],
+    },
+  };
+
+  const MODERNS = {
+    embiid: { name: "Joel Embiid", pos: "Center", team: "Philadelphia 76ers",
+      season: "2022-23 (MVP)", accent: "#006BB6",
+      PPG:33.1, RPG:10.2, APG:4.2, BPG:1.7, TS:0.655, USG:37.5, PACE:99.2, LG_TS:0.580 },
+    jokic: { name: "Nikola Jokić", pos: "Center", team: "Denver Nuggets",
+      season: "2021-22 (MVP)", accent: "#0E2240",
+      PPG:27.1, RPG:13.8, APG:7.9, BPG:0.9, TS:0.661, USG:32.0, PACE:97.6, LG_TS:0.572 },
+    giannis: { name: "Giannis Antetokounmpo", pos: "Power Forward", team: "Milwaukee Bucks",
+      season: "2019-20 (MVP)", accent: "#00471B",
+      PPG:29.5, RPG:13.6, APG:5.6, BPG:1.0, TS:0.613, USG:37.5, PACE:100.3, LG_TS:0.567 },
+    lebron: { name: "LeBron James", pos: "Forward", team: "Cleveland Cavaliers",
+      season: "2017-18", accent: "#860038",
+      PPG:27.5, RPG:8.6, APG:9.1, BPG:0.9, TS:0.621, USG:31.6, PACE:97.3, LG_TS:0.563 },
+    curry: { name: "Stephen Curry", pos: "Point Guard", team: "Golden State Warriors",
+      season: "2015-16 (Unanimous MVP)", accent: "#1D428A",
+      PPG:30.1, RPG:5.4, APG:6.7, BPG:0.2, TS:0.669, USG:32.6, PACE:95.8, LG_TS:0.541 },
+    luka: { name: "Luka Dončić", pos: "Guard", team: "Dallas Mavericks",
+      season: "2023-24 (Scoring Champ)", accent: "#00538C",
+      PPG:33.9, RPG:9.2, APG:9.8, BPG:0.5, TS:0.613, USG:36.1, PACE:100.0, LG_TS:0.580 },
+  };
+
+  const MODERN_PACE = 99.5;
+  const MODERN_LG_TS = 0.580;
+
+  function adjustToModern(s) {
+    const paceRatio = MODERN_PACE / s.PACE;
+    return {
+      PPG: s.PPG * paceRatio,
+      RPG: s.RPG * paceRatio,
+      APG: s.APG * paceRatio,
+      BPG: s.BPG * paceRatio,
+      TS:  s.TS + (MODERN_LG_TS - s.LG_TS),
+      USG: Math.min(40, s.USG * 1.05),
+      _paceRatio: paceRatio,
+      _tsDelta: MODERN_LG_TS - s.LG_TS,
+    };
+  }
+
+  const STATS = [
+    { key:"PPG", label:"PPG",  full:"Points per Game",   fmt: v => v.toFixed(1) },
+    { key:"RPG", label:"RPG",  full:"Rebounds per Game", fmt: v => v.toFixed(1) },
+    { key:"APG", label:"APG",  full:"Assists per Game",  fmt: v => v.toFixed(1) },
+    { key:"BPG", label:"BPG",  full:"Blocks per Game",   fmt: v => v.toFixed(1) },
+    { key:"TS",  label:"TS%",  full:"True Shooting %",   fmt: v => (v*100).toFixed(1), display: v => v*100 },
+    { key:"USG", label:"USG%", full:"Usage Rate",        fmt: v => v.toFixed(1) },
+  ];
+
+  let state = { legendKey:"shaq", modernKey:"embiid", legendSeasonIdx:2, adjusted:false };
+
+  /* ── Local tooltip wrappers (use the existing #tooltip element) ──────── */
+  const v5Tooltip = document.getElementById('tooltip');
+  function v5ShowTip(title, html, event) {
+    v5Tooltip.style.display = 'block';
+    document.getElementById('tt-title').textContent = title;
+    document.getElementById('tt-body').innerHTML = html;
+    v5MoveTip(event);
+  }
+  function v5MoveTip(event) {
+    const pad = 14;
+    let x = event.clientX + pad, y = event.clientY - 10;
+    const rect = v5Tooltip.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - 8) x = event.clientX - rect.width - pad;
+    if (y + rect.height > window.innerHeight - 8) y = window.innerHeight - rect.height - 8;
+    v5Tooltip.style.left = x + 'px';
+    v5Tooltip.style.top  = y + 'px';
+  }
+  function v5HideTip() { v5Tooltip.style.display = 'none'; }
+
+  /* ── D3 chart setup ──────────────────────────────────────────────────── */
+  const SVG_W = 720, SVG_H = 380;
+  const M = { top: 28, right: 18, bottom: 48, left: 36 };
+  const CW = SVG_W - M.left - M.right;
+  const CH = SVG_H - M.top - M.bottom;
+
+  const svg = d3.select('#v5-chart');
+  const g = svg.append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const x0 = d3.scaleBand().domain(STATS.map(s => s.key))
+    .range([0, CW]).paddingInner(0.25).paddingOuter(0.1);
+  const x1 = d3.scaleBand().range([0, x0.bandwidth()]).padding(0.18);
+  const y  = d3.scaleLinear().domain([0, 75]).range([CH, 0]);
+
+  const gridG = g.append('g').attr('class', 'v5-grid');
+  function drawGrid() {
+    const ticks = y.ticks(5);
+    const sel = gridG.selectAll('line').data(ticks);
+    sel.enter().append('line').merge(sel)
+      .attr('class', 'v5-grid-line')
+      .attr('x1', 0).attr('x2', CW)
+      .attr('y1', d => y(d)).attr('y2', d => y(d));
+    sel.exit().remove();
+
+    const tx = gridG.selectAll('text.v5-axis-tick').data(ticks);
+    tx.enter().append('text').attr('class', 'v5-axis-tick').merge(tx)
+      .attr('x', -8).attr('y', d => y(d) + 3)
+      .attr('text-anchor', 'end')
+      .text(d => d);
+    tx.exit().remove();
+  }
+  drawGrid();
+
+  const xLabelG = g.append('g').attr('class', 'v5-x-labels');
+  STATS.forEach(s => {
+    xLabelG.append('text')
+      .attr('class', 'v5-axis-label')
+      .attr('x', x0(s.key) + x0.bandwidth()/2)
+      .attr('y', CH + 26)
+      .text(s.label)
+      .style('cursor', 'help')
+      .on('mousemove', event => v5ShowTip(s.full, `<span style="color:#666">Hover individual bars for the era-adjustment math.</span>`, event))
+      .on('mouseleave', v5HideTip);
+  });
+
+  const barG = g.append('g').attr('class', 'v5-bars');
+
+  function getCurrentData() {
+    const legend = LEGENDS[state.legendKey];
+    const season = legend.seasons[state.legendSeasonIdx];
+    const adj    = adjustToModern(season);
+    const modern = MODERNS[state.modernKey];
+    return { legend, season, adj, modern };
+  }
+
+  function render() {
+    const { legend, season, adj, modern } = getCurrentData();
+    const showAdj = state.adjusted;
+    x1.domain(["legend", "modern"]);
+
+    const data = STATS.map(s => ({
+      stat: s,
+      legendRaw: season[s.key],
+      legendAdj: adj[s.key],
+      legendShown: showAdj ? adj[s.key] : season[s.key],
+      modernStat: modern[s.key],
+    }));
+
+    const groups = barG.selectAll('g.v5-stat-group').data(data, d => d.stat.key);
+    const groupsEnter = groups.enter().append('g')
+      .attr('class', 'v5-stat-group')
+      .attr('transform', d => `translate(${x0(d.stat.key)},0)`);
+    const allGroups = groupsEnter.merge(groups);
+
+    /* Legend bar (enter) */
+    groupsEnter.append('rect').attr('class', 'v5-bar v5-bar-legend')
+      .attr('x', x1("legend")).attr('width', x1.bandwidth())
+      .attr('y', CH).attr('height', 0);
+    groupsEnter.append('text').attr('class', 'v5-bar-label v5-bar-label-legend')
+      .attr('text-anchor', 'middle')
+      .attr('x', x1("legend") + x1.bandwidth()/2).attr('y', CH);
+
+    /* Legend bar (update + transition) */
+    allGroups.select('rect.v5-bar-legend')
+      .on('mousemove', function(event, d) {
+        const tag = showAdj
+          ? `<span class="tt-tag adj">ADJUSTED</span>`
+          : `<span class="tt-tag legend">RAW</span>`;
+        const v = d.legendShown;
+        const valStr = d.stat.fmt(v);
+        let calc = '';
+        if (showAdj) {
+          if (d.stat.key === 'TS') {
+            const era = (d.legendRaw*100).toFixed(1);
+            const delta = (adj._tsDelta*100).toFixed(1);
+            calc = `<div class="tt-calc">${era}% + ${delta}% league shift<br>= ${valStr}% TS%</div>`;
+          } else if (d.stat.key === 'USG') {
+            calc = `<div class="tt-calc">${d.legendRaw.toFixed(1)} × 1.05 star-usage<br>= ${valStr}</div>`;
+          } else {
+            const ratio = adj._paceRatio.toFixed(3);
+            calc = `<div class="tt-calc">${d.legendRaw.toFixed(1)} × ${ratio} pace<br>= ${valStr}</div>`;
+          }
+        } else {
+          calc = `<div class="tt-calc">Source: Basketball Reference<br>${season.year} ${legend.name}</div>`;
+        }
+        v5ShowTip(
+          `${legend.name} — ${d.stat.full}`,
+          `${tag} <b>${valStr}${d.stat.key==='TS' || d.stat.key==='USG' ? '%' : ''}</b>${calc}`,
+          event
+        );
+      })
+      .on('mouseleave', v5HideTip)
+      .transition().duration(550)
+      .attr('x', x1("legend")).attr('width', x1.bandwidth())
+      .attr('y',      d => y(d.stat.display ? d.stat.display(d.legendShown) : d.legendShown))
+      .attr('height', d => CH - y(d.stat.display ? d.stat.display(d.legendShown) : d.legendShown))
+      .attr('fill',   showAdj ? '#e89968' : '#1a3a6b');
+
+    allGroups.select('text.v5-bar-label-legend')
+      .attr('fill', showAdj ? '#e89968' : '#1a3a6b')
+      .transition().duration(550)
+      .attr('x', x1("legend") + x1.bandwidth()/2)
+      .attr('y', d => y(d.stat.display ? d.stat.display(d.legendShown) : d.legendShown) - 6)
+      .tween('text', function(d) {
+        const node = this;
+        const prev = +node.dataset.last || 0;
+        const next = d.stat.display ? d.stat.display(d.legendShown) : d.legendShown;
+        const i = d3.interpolateNumber(prev, next);
+        node.dataset.last = next;
+        return t => { node.textContent = i(t).toFixed(1); };
+      });
+
+    /* Modern bar (enter) */
+    groupsEnter.append('rect').attr('class', 'v5-bar v5-bar-modern')
+      .attr('x', x1("modern")).attr('width', x1.bandwidth())
+      .attr('y', CH).attr('height', 0)
+      .attr('fill', '#2e7d32');
+    groupsEnter.append('text').attr('class', 'v5-bar-label v5-bar-label-modern')
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#2e7d32')
+      .attr('x', x1("modern") + x1.bandwidth()/2).attr('y', CH);
+
+    /* Modern bar (update + transition) */
+    allGroups.select('rect.v5-bar-modern')
+      .on('mousemove', function(event, d) {
+        const v = d.modernStat;
+        const valStr = d.stat.fmt(v);
+        v5ShowTip(
+          `${modern.name} — ${d.stat.full}`,
+          `<span class="tt-tag modern">MODERN</span> <b>${valStr}${d.stat.key==='TS' || d.stat.key==='USG' ? '%' : ''}</b><div class="tt-calc">${modern.season} (${modern.team})</div>`,
+          event
+        );
+      })
+      .on('mouseleave', v5HideTip)
+      .transition().duration(550)
+      .attr('x', x1("modern")).attr('width', x1.bandwidth())
+      .attr('y',      d => y(d.stat.display ? d.stat.display(d.modernStat) : d.modernStat))
+      .attr('height', d => CH - y(d.stat.display ? d.stat.display(d.modernStat) : d.modernStat));
+
+    allGroups.select('text.v5-bar-label-modern')
+      .transition().duration(550)
+      .attr('x', x1("modern") + x1.bandwidth()/2)
+      .attr('y', d => y(d.stat.display ? d.stat.display(d.modernStat) : d.modernStat) - 6)
+      .tween('text', function(d) {
+        const node = this;
+        const prev = +node.dataset.last || 0;
+        const next = d.stat.display ? d.stat.display(d.modernStat) : d.modernStat;
+        const i = d3.interpolateNumber(prev, next);
+        node.dataset.last = next;
+        return t => { node.textContent = i(t).toFixed(1); };
+      });
+
+    groups.exit().remove();
+
+    /* Side panel + slider + chips */
+    document.getElementById('v5-legend-name').textContent = legend.name;
+    document.getElementById('v5-legend-meta').textContent = `${legend.pos} · ${legend.team}`;
+    document.getElementById('v5-legend-season').textContent = `Season: ${season.year}`;
+    document.getElementById('v5-modern-name').textContent = modern.name;
+    document.getElementById('v5-modern-meta').textContent = `${modern.pos} · ${modern.team}`;
+    document.getElementById('v5-modern-season').textContent = `Season: ${modern.season}`;
+    document.getElementById('v5-legend-card').style.borderLeftColor = legend.accent;
+    document.getElementById('v5-modern-card').style.borderLeftColor = modern.accent;
+
+    const slider = document.getElementById('v5-year-slider');
+    slider.max = legend.seasons.length - 1;
+    if (state.legendSeasonIdx > slider.max) state.legendSeasonIdx = slider.max;
+    slider.value = state.legendSeasonIdx;
+    document.getElementById('v5-year-val').textContent = season.year;
+
+    const lastName = legend.name.split(' ').slice(-1)[0];
+    const mLastName = modern.name.split(' ').slice(-1)[0];
+    document.getElementById('v5-chip-raw-lbl').textContent  = `${lastName} — Raw`;
+    document.getElementById('v5-chip-adj-lbl').textContent  = `${lastName} — Adjusted to Today`;
+    document.getElementById('v5-chip-modern-lbl').textContent = `${mLastName} — ${modern.season.split(' ')[0]}`;
+    document.getElementById('v5-chip-raw').style.display = showAdj ? 'none' : 'flex';
+    document.getElementById('v5-chip-adj').style.display = showAdj ? 'flex' : 'none';
+
+    const mbox = document.getElementById('v5-methodology-text');
+    if (showAdj) {
+      const paceR = adj._paceRatio.toFixed(3);
+      const tsD = (adj._tsDelta*100).toFixed(1);
+      mbox.innerHTML = `Pace ratio: <b>${paceR}×</b> &nbsp;·&nbsp; League TS% shift: <b>+${tsD}%</b> &nbsp;·&nbsp; Star usage: <b>×1.05</b>. Per-game stats scale with possessions; TS% preserves the player's edge over their era's league average.`;
+    } else {
+      mbox.innerHTML = `<b>${legend.name}</b>'s actual ${season.year} stats. League pace was <b>${season.PACE}</b> possessions/game vs <b>${MODERN_PACE}</b> today. Toggle "Era-Adjusted" to see the modern equivalent.`;
+    }
+
+    updateVerdict(legend, season, adj, modern);
+  }
+
+  function updateVerdict(legend, season, adj, modern) {
+    const title = document.getElementById('v5-verdict-title');
+    const body  = document.getElementById('v5-verdict-body');
+    const shown = state.adjusted ? adj : season;
+    const ppgDelta = shown.PPG - modern.PPG;
+    const lname = legend.name.split(' ').slice(-1)[0];
+    const mname = modern.name.split(' ').slice(-1)[0];
+
+    let headline, verdict;
+    if (state.adjusted) {
+      if (ppgDelta > 2) {
+        headline = `${lname} out-scores ${mname} — even today`;
+        verdict = `Adjusted for pace and efficiency, ${lname}'s ${shown.PPG.toFixed(1)} PPG still tops ${mname}'s ${modern.PPG.toFixed(1)} (${ppgDelta>0?'+':''}${ppgDelta.toFixed(1)}). The 90s legend translates.`;
+      } else if (ppgDelta < -3) {
+        headline = `${mname} pulls ahead`;
+        verdict = `Even after pace correction, ${mname}'s ${modern.PPG.toFixed(1)} PPG outpaces ${lname}'s adjusted ${shown.PPG.toFixed(1)} (${ppgDelta.toFixed(1)}). The modern offense wins this matchup.`;
+      } else {
+        headline = `A statistical dead heat`;
+        verdict = `Adjusted ${lname} (${shown.PPG.toFixed(1)} PPG) and ${mname} (${modern.PPG.toFixed(1)} PPG) are within ${Math.abs(ppgDelta).toFixed(1)}. Different eras, comparable peak production.`;
+      }
+    } else {
+      if (ppgDelta > 0.5) {
+        headline = `${lname}'s raw numbers still hold up`;
+        verdict = `${lname}'s ${shown.PPG.toFixed(1)} PPG beats ${mname}'s ${modern.PPG.toFixed(1)} on paper. But raw stats ignore pace — toggle "Era-Adjusted" to see the real comparison.`;
+      } else {
+        headline = `${mname} wins the raw matchup`;
+        verdict = `${mname}'s ${modern.PPG.toFixed(1)} PPG tops ${lname}'s ${shown.PPG.toFixed(1)}. But the 90s ran ${season.PACE} possessions/game vs ~100 today — toggle "Era-Adjusted" to level the field.`;
+      }
+    }
+    title.textContent = headline;
+    body.textContent  = verdict;
+  }
+
+  /* ── Event wiring ────────────────────────────────────────────────────── */
+  document.getElementById('v5-legend-select').addEventListener('change', e => {
+    state.legendKey = e.target.value;
+    const peakIdx = {shaq:2, hakeem:1, malone:1, stockton:0, miller:0};
+    state.legendSeasonIdx = peakIdx[state.legendKey] ?? 0;
+    render();
+  });
+  document.getElementById('v5-modern-select').addEventListener('change', e => {
+    state.modernKey = e.target.value;
+    render();
+  });
+  document.getElementById('v5-tg-raw').addEventListener('click', () => {
+    state.adjusted = false;
+    document.getElementById('v5-tg-raw').classList.add('active');
+    document.getElementById('v5-tg-adj').classList.remove('active');
+    render();
+  });
+  document.getElementById('v5-tg-adj').addEventListener('click', () => {
+    state.adjusted = true;
+    document.getElementById('v5-tg-adj').classList.add('active');
+    document.getElementById('v5-tg-raw').classList.remove('active');
+    render();
+  });
+  document.getElementById('v5-year-slider').addEventListener('input', e => {
+    state.legendSeasonIdx = +e.target.value;
+    render();
+  });
+
+  render();
 })();
 </script>
 </body>

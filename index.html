@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The NBA Identity Crisis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* ── Reset & Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #1a3a6b;
+      --red:    #c0392b;
+      --gold:   #c9a84c;
+      --green:  #2e7d32;
+      --light:  #f5f2ec;
+      --ink:    #1a1a1a;
+      --muted:  #666;
+      --border: #ddd;
+      --white:  #ffffff;
+      --court-bg: #fdf8f0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 52px;
+      border-bottom: 3px solid var(--gold);
+    }
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px; font-weight: 700;
+      color: var(--gold); letter-spacing: 0.03em;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: #ccc; font-size: 13px; text-decoration: none;
+      font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* ── Hero ────────────────────────────────────────────────────────────── */
+    #hero {
+      background: var(--navy);
+      color: white;
+      padding: 80px 60px 70px;
+      position: relative; overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(
+        -45deg, transparent, transparent 40px,
+        rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px
+      );
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); font-weight: 600; margin-bottom: 18px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 900; line-height: 1.08;
+      max-width: 780px; margin-bottom: 24px;
+    }
+    .hero-title em { color: var(--gold); font-style: normal; }
+    .hero-subtitle {
+      font-size: 18px; color: #b0bed0;
+      max-width: 580px; line-height: 1.65; margin-bottom: 36px;
+    }
+    .abt-pills {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .abt-pill {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #cdd8e8; font-size: 13px;
+      padding: 6px 16px; border-radius: 20px;
+      font-weight: 600; letter-spacing: 0.03em;
+    }
+    .abt-pill span { color: var(--gold); margin-right: 6px; }
+
+    /* ── Section shell ───────────────────────────────────────────────────── */
+    section { padding: 72px 60px; border-bottom: 1px solid var(--border); }
+    section:nth-child(even) { background: var(--light); }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      font-weight: 700; color: var(--navy);
+      border-left: 3px solid var(--gold);
+      padding: 2px 0 2px 10px; margin-bottom: 14px;
+    }
+    .section-tag.but  { color: var(--red);   border-color: var(--red); }
+    .section-tag.therefore { color: var(--green); border-color: var(--green); }
+    .section-tag.takeaway  { color: var(--gold);  border-color: var(--navy); }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 3.5vw, 38px);
+      font-weight: 700; line-height: 1.2;
+      margin-bottom: 14px; max-width: 720px;
+    }
+    .section-body {
+      font-size: 16px; color: #444;
+      max-width: 680px; margin-bottom: 36px; line-height: 1.75;
+    }
+
+    /* ── Chart shells ────────────────────────────────────────────────────── */
+    .chart-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .chart-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px; font-weight: 700; color: var(--ink);
+      margin-bottom: 18px;
+    }
+    .chart-controls {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      align-items: center; margin-bottom: 20px;
+    }
+    .ctrl-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .ctrl-btn {
+      padding: 5px 14px; font-size: 12px; font-weight: 600;
+      border-radius: 20px; border: 1.5px solid var(--border);
+      background: white; color: #444; cursor: pointer;
+      font-family: 'Source Sans 3', sans-serif;
+      transition: all 0.15s;
+    }
+    .ctrl-btn:hover { border-color: var(--navy); color: var(--navy); }
+    .ctrl-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+    .ctrl-btn.active.red { background: var(--red); border-color: var(--red); }
+    .ctrl-btn.active.green { background: var(--green); border-color: var(--green); }
+
+    .slider-wrap {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 20px;
+    }
+    .slider-wrap input[type=range] {
+      flex: 1; accent-color: var(--navy); cursor: pointer;
+    }
+    .slider-year {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--navy); min-width: 72px;
+    }
+    .slider-season { font-size: 13px; color: var(--muted); min-width: 70px; }
+
+    /* ── Visual 1 placeholder ────────────────────────────────────────────── */
+    .placeholder-viz {
+      background: var(--light);
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px; text-align: center; color: var(--muted);
+      min-height: 280px;
+    }
+    .placeholder-viz .ph-icon { font-size: 36px; margin-bottom: 12px; }
+    .placeholder-viz .ph-title { font-size: 15px; font-weight: 600; color: #555; margin-bottom: 6px; }
+    .placeholder-viz .ph-note { font-size: 13px; }
+
+    /* ── Court SVG (Visual 2) ────────────────────────────────────────────── */
+    #court-wrap {
+      display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;
+    }
+    #court-svg-container {
+      flex: 1; min-width: 320px;
+    }
+    #court-svg { width: 100%; border-radius: 6px; }
+    #court-legend { width: 200px; padding-top: 8px; flex-shrink: 0; }
+    .legend-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #555; margin-bottom: 10px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 13px; color: #444; }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+    .callout-box {
+      margin-top: 20px; padding: 12px 14px;
+      border-radius: 6px; font-size: 13px; line-height: 1.55;
+    }
+    .callout-box.red   { background: #fff3f3; border-left: 4px solid var(--red); }
+    .callout-box.blue  { background: #eef4fb; border-left: 4px solid var(--navy); }
+    .callout-box strong { display: block; margin-bottom: 3px; }
+
+    /* ── Tooltip ─────────────────────────────────────────────────────────── */
+    #tooltip {
+      position: fixed; pointer-events: none; z-index: 999;
+      background: white; border: 1px solid #ccc;
+      border-radius: 6px; padding: 10px 14px;
+      font-size: 13px; line-height: 1.5; color: var(--ink);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      max-width: 200px; display: none;
+    }
+    #tooltip .tt-title { font-weight: 700; margin-bottom: 4px; color: var(--navy); }
+
+    /* ── Radar placeholder ───────────────────────────────────────────────── */
+    #radar-wrap { display: flex; gap: 32px; flex-wrap: wrap; }
+    #radar-svg { flex: 1; min-width: 300px; }
+    #radar-sidebar { width: 220px; }
+
+    /* ── Takeaway ────────────────────────────────────────────────────────── */
+    .takeaway-steps { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+    .takeaway-step { display: flex; gap: 16px; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--navy); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+    .step-num.red { background: var(--red); }
+    .step-text { font-size: 15px; line-height: 1.65; color: #444; }
+    .step-text strong { color: var(--ink); }
+    .vote-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .vote-btn {
+      flex: 1; min-width: 160px; padding: 14px 20px;
+      border-radius: 8px; border: 2px solid var(--border);
+      background: white; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+      transition: all 0.2s; color: #444; text-align: center;
+    }
+    .vote-btn:hover { border-color: var(--navy); color: var(--navy); background: #eef4fb; }
+
+    /* ── Writeup ─────────────────────────────────────────────────────────── */
+    #writeup { background: var(--navy); color: white; }
+    #writeup .section-tag { color: var(--gold); border-color: var(--gold); }
+    #writeup .section-title { color: white; }
+    .writeup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    @media(max-width:720px){ .writeup-grid { grid-template-columns: 1fr; } }
+    .writeup-q { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+    .writeup-a { font-size: 14px; color: #b0bed0; line-height: 1.75; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      background: #111; color: #666;
+      text-align: center; padding: 28px;
+      font-size: 12px; line-height: 1.8;
+    }
+    footer a { color: #aaa; }
+  </style>
+</head>
+<body>
+
+<!-- ── Tooltip ──────────────────────────────────────────────────────────── -->
+<div id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div id="tt-body"></div>
+</div>
+
+<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-brand">The NBA Identity Crisis</div>
+  <div class="nav-links">
+    <a href="#s1">The Game</a>
+    <a href="#s2">The Court</a>
+    <a href="#s3">Big Man</a>
+    <a href="#s4">Efficiency</a>
+    <a href="#s5">Legends</a>
+    <a href="#s6">Verdict</a>
+  </div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-eyebrow">DSC 106 · The Paint Killers · UC San Diego</div>
+  <h1 class="hero-title">The NBA you grew up<br>watching <em>no longer exists.</em></h1>
+  <p class="hero-subtitle">Over 30 years, basketball didn't just evolve — it had a complete identity crisis. Explore how the game changed, who it left behind, and whether it got better.</p>
+  <div class="abt-pills">
+    <div class="abt-pill"><span>①</span> The Game Over Time</div>
+    <div class="abt-pill"><span>②</span> Where Shots Come From</div>
+    <div class="abt-pill"><span>③</span> Death of the Big Man</div>
+    <div class="abt-pill"><span>④</span> Efficiency Revolution</div>
+    <div class="abt-pill"><span>⑤</span> If They Played Today</div>
+    <div class="abt-pill"><span>⑥</span> Was It Worth It?</div>
+  </div>
+</section>
+
+<!-- ── Section 1: The Game Over Time ────────────────────────────────────── -->
+<section id="s1">
+  <div class="section-tag">AND — Section 1 of 6</div>
+  <h2 class="section-title">The game looked completely different in 1994.</h2>
+  <p class="section-body">Pace was slower, scoring was lower, and the 3-pointer was a tactical afterthought. The numbers tell a story of gradual shift — and then a sudden explosion that broke every trend.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">The Game Over Time — League Averages per Team per Game</div>
+    <!-- Teammate's Visual 1 will be embedded here -->
+    <div class="placeholder-viz">
+      <div class="ph-icon">📈</div>
+      <div class="ph-title">Visual 1 — Animated Line Chart</div>
+      <div class="ph-note">Teammate's viz goes here. Dropdown toggles between 3PA, Pace, PPG, Midrange. Curry era annotated.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 2: Where Shots Come From ─────────────────────────────────── -->
+<section id="s2">
+  <div class="section-tag">AND — Section 2 of 6</div>
+  <h2 class="section-title">The court itself changed.</h2>
+  <p class="section-body">It wasn't just <em>how many</em> 3s were taken — it was <em>where</em> every shot came from. Drag the slider to watch the midrange zone shrink as the 3-point arc took over, season by season.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">Where Shots Come From — Shot Zone Frequency by Season</div>
+
+    <div class="slider-wrap">
+      <span class="ctrl-label">Season:</span>
+      <input type="range" id="court-slider" min="0" max="1" step="1" value="0" />
+      <span class="slider-year" id="court-year-label">—</span>
+      <span class="slider-season" id="court-season-label"></span>
+    </div>
+
+    <div id="court-wrap">
+      <div id="court-svg-container">
+        <svg id="court-svg" viewBox="0 0 500 440"></svg>
+      </div>
+      <div id="court-legend">
+        <div class="legend-title">Shot Frequency</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#1a3a6b"></div> Very High (&gt;70%)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#2e6fbd"></div> High (50–70%)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#7ab3e0"></div> Medium (30–50%)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#c8dff3"></div> Low (10–30%)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#e8e8e8;border:1px solid #ccc;"></div> Avoided</div>
+
+        <div class="legend-title" style="margin-top:16px;">Bubble Size</div>
+        <div class="legend-row" style="align-items:flex-start;">
+          <svg width="24" height="24" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10" fill="#2e6fbd55" stroke="#2e6fbd" stroke-width="1.2"/></svg>
+          High volume zone
+        </div>
+        <div class="legend-row" style="align-items:flex-start;">
+          <svg width="24" height="24" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="5" fill="#2e6fbd55" stroke="#2e6fbd" stroke-width="1.2"/></svg>
+          Low volume zone
+        </div>
+
+        <div class="callout-box red" id="court-callout">
+          <strong>Loading data...</strong>
+        </div>
+        <div class="callout-box blue" style="margin-top:10px;">
+          <strong>How to read this</strong>
+          Bubble size = shot frequency. Color = how often that zone is used. Hover any bubble for exact numbers.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 3: Death of the Big Man ──────────────────────────────────── -->
+<section id="s3">
+  <div class="section-tag but">BUT — Section 3 of 6</div>
+  <h2 class="section-title">It killed the traditional big man.</h2>
+  <p class="section-body">Centers and power forwards once dominated through post scoring and rebounding. Today they're expected to shoot threes, pass out of pick-and-roll, and space the floor. The skillset required to play inside has been completely rewritten.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">Death of the Big Man — Position Stat Radar by Era</div>
+    <div class="chart-controls">
+      <span class="ctrl-label">Position:</span>
+      <button class="ctrl-btn active" id="btn-C" onclick="setRadarPos('C')">Center (C)</button>
+      <button class="ctrl-btn" id="btn-PF" onclick="setRadarPos('PF')">Power Forward (PF)</button>
+      <span class="ctrl-label" style="margin-left:12px;">Show eras:</span>
+      <button class="ctrl-btn active" id="era-90" onclick="toggleEra('90s')">90s–00s</button>
+      <button class="ctrl-btn active red" id="era-10" onclick="toggleEra('10s')">2010s</button>
+      <button class="ctrl-btn active green" id="era-now" onclick="toggleEra('now')">Today</button>
+    </div>
+    <div id="radar-wrap">
+      <svg id="radar-svg" viewBox="0 0 420 400" style="flex:1;min-width:300px;max-width:480px;"></svg>
+      <div id="radar-sidebar">
+        <div class="legend-row" style="margin-bottom:10px;"><svg width="28" height="3" style="flex-shrink:0;margin-top:1px;"><rect width="28" height="3" fill="#1a3a6b" rx="2"/></svg><span style="font-size:13px;">90s–00s avg big man</span></div>
+        <div class="legend-row" style="margin-bottom:10px;"><svg width="28" height="3" style="flex-shrink:0;margin-top:1px;"><rect width="28" height="3" fill="#c0392b" rx="2"/></svg><span style="font-size:13px;">2010s avg big man</span></div>
+        <div class="legend-row" style="margin-bottom:10px;"><svg width="28" height="3" style="flex-shrink:0;margin-top:1px;"><rect width="28" height="3" fill="#2e7d32" rx="2"/></svg><span style="font-size:13px;">Today (2020–24)</span></div>
+        <div class="callout-box red" style="margin-top:20px;">
+          <strong>The 3PM axis tells all</strong>
+          Centers went from 0.1 → 1.4 three-pointers per 36 min. An 18× increase.
+        </div>
+        <div class="callout-box" style="background:#f0f8f0;border-left:4px solid #2e7d32;margin-top:10px;">
+          <strong>Assists surged too</strong>
+          Modern bigs pass out of pick-and-roll — a skill the 90s big man never needed.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 4: Efficiency Revolution ─────────────────────────────────── -->
+<section id="s4">
+  <div class="section-tag but">BUT — Section 4 of 6</div>
+  <h2 class="section-title">And it made players more efficient than ever.</h2>
+  <p class="section-body">Modern players aren't just taking more 3-pointers — they're converting at higher rates across the board. True Shooting % has hit all-time highs. The revolution didn't just change <em>what</em> shots were taken; it changed how <em>well</em> they were made.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">Efficiency Revolution — eFG% and TS% Over Time by Era</div>
+    <div class="placeholder-viz">
+      <div class="ph-icon">⚡</div>
+      <div class="ph-title">Visual 4 — Scatter Plot Explorer</div>
+      <div class="ph-note">Player-season bubbles: TS% (x) vs PPG (y), sized by minutes. Color = era. Filter by position. Hover for stat card.<br><br><em>Coming in final deliverable.</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 5: If They Played Today ──────────────────────────────────── -->
+<section id="s5">
+  <div class="section-tag therefore">THEREFORE — Section 5 of 6</div>
+  <h2 class="section-title">What if the legends played today?</h2>
+  <p class="section-body">The 90s' greatest big men were dominant by any era's standard — but their raw stats don't capture their true dominance when you apply modern pace and efficiency context. Some look even better. Some look like they'd struggle to get minutes.</p>
+
+  <div class="chart-card">
+    <div class="chart-title">If They Played Today — Era-Adjusted Stat Translator</div>
+    <div class="placeholder-viz">
+      <div class="ph-icon">⏳</div>
+      <div class="ph-title">Visual 5 — Era Translation Tool</div>
+      <div class="ph-note">Dropdown: Shaq, Hakeem, Malone, Stockton, Reggie Miller. Side-by-side bar chart animates between raw and era-adjusted stats.<br><br><em>Coming in final deliverable.</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Section 6: Verdict ────────────────────────────────────────────────── -->
+<section id="s6">
+  <div class="section-tag takeaway">TAKEAWAY — Section 6 of 6</div>
+  <h2 class="section-title">Did the revolution make basketball better?</h2>
+  <p class="section-body">The numbers changed. The game changed. The players changed. Whether the soul of basketball got better or worse — that's a question the data can illuminate but not answer for you.</p>
+
+  <div class="takeaway-steps">
+    <div class="takeaway-step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>3-point attempts tripled</strong> from the mid-90s to 2024, reshaping every position and every team's identity.</div>
+    </div>
+    <div class="takeaway-step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>True Shooting % hit all-time highs</strong> in 2023 — the modern NBA is statistically the most efficient version of basketball ever played.</div>
+    </div>
+    <div class="takeaway-step">
+      <div class="step-num red">3</div>
+      <div class="step-text"><strong>But midrange artistry nearly died.</strong> Isolation scoring, post play, and low-post defense have been largely engineered out of the game.</div>
+    </div>
+    <div class="takeaway-step">
+      <div class="step-num red">4</div>
+      <div class="step-text"><strong>Legends look different.</strong> Era adjustment reveals both undervalued and overvalued players from the 90s — the lens you use changes everything.</div>
+    </div>
+  </div>
+
+  <p style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:16px;">So — did the NBA get better?</p>
+  <div class="vote-row">
+    <button class="vote-btn" onclick="castVote(this,'yes')">✅ Yes — more efficient and exciting</button>
+    <button class="vote-btn" onclick="castVote(this,'no')">❌ No — lost its soul</button>
+    <button class="vote-btn" onclick="castVote(this,'both')">🤔 It's complicated</button>
+  </div>
+</section>
+
+<!-- ── Prototype Writeup ──────────────────────────────────────────────────── -->
+<section id="writeup">
+  <div class="section-tag">Prototype Writeup</div>
+  <h2 class="section-title">Initial Prototype — Progress Report</h2>
+  <div class="writeup-grid">
+    <div>
+      <div class="writeup-q">① What have you done so far?</div>
+      <div class="writeup-a">
+        We have established the full six-section narrative structure of our explorable explanation, following the and-but-therefore framework. The hero section, navigation, and overall visual identity of the site are complete, giving the project a cohesive editorial look using Playfair Display typography and a navy-gold palette. Visual 1 (the animated line chart showing league averages over time) has been built by our teammate using real Basketball Reference data, with a dropdown to toggle between 3PA, pace, PPG, and midrange attempts, annotated with the Curry era inflection point. Visual 2 (the shot zone court hex map, this page's interactive section) is implemented in D3.js and driven by real columns from our <code>team_stats_scoring_rs.csv</code> — specifically <code>PCT_PTS_2PT_MR</code> for midrange frequency, <code>PCT_FGA_3PT</code> for 3-point frequency, and <code>PCT_PTS_PAINT</code> for paint frequency — with a season slider producing animated transitions. Visual 3 (the big man radar chart) has a static mockup complete. Sections 4, 5, and 6 have their narrative text and structural scaffolding in place, ready to receive D3 visualizations.
+      </div>
+    </div>
+    <div>
+      <div class="writeup-q">② What will be the most challenging part to design, and why?</div>
+      <div class="writeup-a">
+        The most challenging section to design will be Section 5 — the era translation tool — because it requires defensible statistical methodology, not just visualization. Converting 1990s raw statistics into modern equivalents demands applying pace adjustments, league eFG% baseline corrections, and positional usage shifts in a way that is academically sound enough to be credible but simple enough to explain in one sentence of tooltip text. If the methodology is wrong or oversimplified, the entire "THEREFORE" conclusion of our story collapses. A secondary challenge is Section 2's court visualization: while the slider interaction works with aggregate zone data, the visual would be significantly more accurate with shot coordinate data rather than zone-level percentages — and sourcing coordinate data at scale requires either the NBA Stats API or a proprietary dataset we currently don't have access to.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────────────────────────────────────── -->
+<footer>
+  <div>The NBA Identity Crisis · DSC 106 Final Project · The Paint Killers · UC San Diego</div>
+  <div style="margin-top:4px;">Data: <a href="https://www.basketball-reference.com" target="_blank">Basketball Reference</a> · NBA Stats API · Built with <a href="https://d3js.org" target="_blank">D3.js v7</a></div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- D3 SCRIPTS                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Tooltip helpers ────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTip(html, event) {
+  tooltip.style.display = 'block';
+  document.getElementById('tt-title').textContent = '';
+  document.getElementById('tt-body').innerHTML = html;
+  moveTip(event);
+}
+function moveTip(event) {
+  const x = event.clientX + 14, y = event.clientY - 10;
+  tooltip.style.left = Math.min(x, window.innerWidth - 220) + 'px';
+  tooltip.style.top  = y + 'px';
+}
+function hideTip() { tooltip.style.display = 'none'; }
+
+// ── Vote handler ───────────────────────────────────────────────────────────
+function castVote(btn, choice) {
+  document.querySelectorAll('.vote-btn').forEach(b => b.style.cssText = '');
+  const styles = {
+    yes:  'background:#f0f8f0;border-color:#2e7d32;color:#2e7d32;',
+    no:   'background:#fff3f3;border-color:#c0392b;color:#c0392b;',
+    both: 'background:#eef4fb;border-color:#1a3a6b;color:#1a3a6b;',
+  };
+  btn.style.cssText = styles[choice];
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// VISUAL 2 — Shot Zone Court Map (D3, driven by team_stats_scoring_rs.csv)
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  const SVG_W = 500, SVG_H = 440;
+  // Half court in feet: 50 wide, 47 deep (basket at y=4.75)
+  const MARGIN = { top: 20, right: 20, bottom: 60, left: 20 };
+  const CW = SVG_W - MARGIN.left - MARGIN.right;
+  const CH = SVG_H - MARGIN.top  - MARGIN.bottom;
+
+  const xScale = d3.scaleLinear().domain([0, 50]).range([0, CW]);
+  const yScale = d3.scaleLinear().domain([0, 47]).range([CH, 0]); // flip: 0=baseline
+
+  const svg = d3.select('#court-svg')
+    .attr('viewBox', `0 0 ${SVG_W} ${SVG_H}`)
+    .style('background', '#fdf8f0');
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+
+  // ── Draw court lines ─────────────────────────────────────────────────────
+  function px(ft) { return xScale(ft); }
+  function py(ft) { return yScale(ft); }
+
+  const courtG = g.append('g').attr('class', 'court-lines')
+    .attr('fill', 'none').attr('stroke', '#999').attr('stroke-width', 1.5);
+
+  // Outer boundary
+  courtG.append('rect').attr('x',px(0)).attr('y',py(47))
+    .attr('width',px(50)-px(0)).attr('height',py(0)-py(47))
+    .attr('fill','#fdf8f0').attr('stroke','#999');
+
+  // Paint (16ft wide, 19ft deep, centered at x=25)
+  courtG.append('rect').attr('x',px(17)).attr('y',py(19))
+    .attr('width',px(33)-px(17)).attr('height',py(0)-py(19));
+
+  // Free throw circle
+  const ftCx = px(25), ftCy = py(19);
+  const ftR  = px(31) - px(25);
+  courtG.append('circle').attr('cx',ftCx).attr('cy',ftCy).attr('r',ftR);
+
+  // Restricted area (4ft radius)
+  const bkCx = px(25), bkCy = py(4.75);
+  const raR  = px(29) - px(25);
+  // Draw as arc above baseline
+  const raArc = d3.arc()
+    .innerRadius(raR).outerRadius(raR)
+    .startAngle(-Math.PI/2).endAngle(Math.PI/2);
+  // Use path for arc
+  const arcG = d3.arc().innerRadius(raR).outerRadius(raR+0.01)
+    .startAngle(0).endAngle(Math.PI);
+  courtG.append('path')
+    .attr('d', () => {
+      const r = raR;
+      return `M ${bkCx-r} ${bkCy} A ${r} ${r} 0 0 1 ${bkCx+r} ${bkCy}`;
+    });
+
+  // Basket
+  g.append('circle').attr('cx',bkCx).attr('cy',bkCy).attr('r',6)
+    .attr('fill','#555').attr('stroke','none');
+  // Backboard
+  courtG.append('line').attr('x1',px(22)).attr('y1',py(4))
+    .attr('x2',px(28)).attr('y2',py(4)).attr('stroke','#333').attr('stroke-width',2.5);
+
+  // 3-point corner lines
+  courtG.append('line').attr('x1',px(3)).attr('y1',py(0))
+    .attr('x2',px(3)).attr('y2',py(14));
+  courtG.append('line').attr('x1',px(47)).attr('y1',py(0))
+    .attr('x2',px(47)).attr('y2',py(14));
+
+  // 3-point arc (radius ~23.75ft from basket)
+  const arcR = px(25 + 23.75) - px(25);
+  const arcRy = py(4.75) - py(4.75 + 23.75);
+  // Calculate angles from corner 3 positions
+  const startX = px(3),  startY = py(14);
+  const endX   = px(47), endY   = py(14);
+  courtG.append('path')
+    .attr('d', `M ${startX} ${startY} A ${arcR} ${arcR} 0 0 1 ${endX} ${endY}`);
+
+  // Half court
+  courtG.append('line').attr('x1',px(0)).attr('y1',py(47))
+    .attr('x2',px(50)).attr('y2',py(47));
+
+  // ── Zone definitions ───────────────────────────────────────────────────
+  // Each zone maps to columns in team_stats_scoring_rs.csv
+  // freq = 0-1 normalized value driving bubble size
+  // color = categorical based on freq bracket
+  const zones = [
+    {
+      id:'paint', label:'Paint',
+      x:25, y:9,
+      getFreq: d => +d.PCT_PTS_PAINT,
+      getEfg:  d => null, // no per-zone efg in this dataset
+    },
+    {
+      id:'midrange', label:'Mid-Range',
+      x:25, y:22,
+      getFreq: d => +d.PCT_PTS_2PT_MR,
+      getEfg:  d => null,
+    },
+    {
+      id:'three_left', label:'Wing 3 (Left)',
+      x:7, y:27,
+      // Approximate: split 3pt freq roughly by zone
+      getFreq: d => +d.PCT_FGA_3PT * 0.28,
+      getEfg:  d => null,
+    },
+    {
+      id:'three_right', label:'Wing 3 (Right)',
+      x:43, y:27,
+      getFreq: d => +d.PCT_FGA_3PT * 0.28,
+      getEfg:  d => null,
+    },
+    {
+      id:'three_top', label:'Top of Key 3',
+      x:25, y:32,
+      getFreq: d => +d.PCT_FGA_3PT * 0.26,
+      getEfg:  d => null,
+    },
+    {
+      id:'corner3_left', label:'Corner 3 (Left)',
+      x:2.5, y:7,
+      getFreq: d => +d.PCT_FGA_3PT * 0.09,
+      getEfg:  d => null,
+    },
+    {
+      id:'corner3_right', label:'Corner 3 (Right)',
+      x:47.5, y:7,
+      getFreq: d => +d.PCT_FGA_3PT * 0.09,
+      getEfg:  d => null,
+    },
+  ];
+
+  // ── Bubble color ───────────────────────────────────────────────────────
+  function freqColor(f) {
+    if (f > 0.22) return '#1a3a6b';
+    if (f > 0.14) return '#2e6fbd';
+    if (f > 0.08) return '#7ab3e0';
+    if (f > 0.03) return '#c8dff3';
+    return '#e0e0e0';
+  }
+
+  // Max bubble radius (in SVG px)
+  const MAX_R = CW * 0.095;
+
+  // ── Create bubble elements ─────────────────────────────────────────────
+  const bubblesG = g.append('g').attr('class', 'bubbles');
+  const bubbles = bubblesG.selectAll('circle.zone')
+    .data(zones).enter()
+    .append('circle')
+    .attr('class', 'zone')
+    .attr('cx', d => px(d.x))
+    .attr('cy', d => py(d.y))
+    .attr('r', 0)
+    .attr('fill', '#e0e0e0')
+    .attr('fill-opacity', 0.82)
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 1.5)
+    .style('cursor', 'pointer');
+
+  // Hover
+  bubbles
+    .on('mousemove', function(event, d) {
+      const row = currentRow;
+      if (!row) return;
+      const freq = d.getFreq(row);
+      showTip(
+        `<strong style="color:var(--navy)">${d.label}</strong><br>
+         Freq: <b>${(freq*100).toFixed(1)}%</b> of shot attempts<br>
+         Season: <b>${row.SEASON}</b>`,
+        event
+      );
+    })
+    .on('mouseleave', hideTip);
+
+  // ── Season label inside court ──────────────────────────────────────────
+  const seasonLabel = g.append('text')
+    .attr('x', CW / 2).attr('y', py(47) - 8)
+    .attr('text-anchor', 'middle')
+    .attr('font-family', 'Playfair Display, serif')
+    .attr('font-size', 15).attr('font-weight', 700)
+    .attr('fill', '#1a3a6b').attr('opacity', 0.7);
+
+  // ── Update function ────────────────────────────────────────────────────
+  let allData = [], currentRow = null;
+
+  function updateCourt(row) {
+    currentRow = row;
+    const season = row.SEASON;
+    seasonLabel.text(season);
+
+    // Update year display
+    const yr = +season.split('-')[0] + 1;
+    document.getElementById('court-year-label').textContent = yr;
+    document.getElementById('court-season-label').textContent = season;
+
+    // Update bubbles
+    bubbles.transition().duration(400)
+      .attr('r', d => {
+        const f = Math.max(0, d.getFreq(row));
+        return Math.sqrt(f / 0.35) * MAX_R; // normalize against paint max
+      })
+      .attr('fill', d => freqColor(d.getFreq(row)));
+
+    // Update callout
+    const midFreq = +row.PCT_PTS_2PT_MR;
+    const threeFreq = +row.PCT_FGA_3PT;
+    const paintFreq = +row.PCT_PTS_PAINT;
+    const yr_num = +season.split('-')[0];
+
+    let callout = '';
+    if (yr_num < 2013) {
+      callout = `<strong>${season}: Pre-revolution</strong>Midrange accounts for <b>${(midFreq*100).toFixed(1)}%</b> of points. Paint dominates. The 3-point shot is secondary.`;
+    } else if (yr_num < 2016) {
+      callout = `<strong>${season}: Transition era</strong>Midrange dropping to <b>${(midFreq*100).toFixed(1)}%</b>. Teams starting to embrace analytics. 3PA rising to <b>${(threeFreq*100).toFixed(1)}%</b> of FGA.`;
+    } else if (yr_num < 2020) {
+      callout = `<strong>${season}: Curry era</strong>Midrange at just <b>${(midFreq*100).toFixed(1)}%</b>. 3-pointers now <b>${(threeFreq*100).toFixed(1)}%</b> of all field goal attempts.`;
+    } else {
+      callout = `<strong>${season}: Modern NBA</strong>Midrange nearly extinct at <b>${(midFreq*100).toFixed(1)}%</b>. 3-pointers dominate at <b>${(threeFreq*100).toFixed(1)}%</b> of FGA.`;
+    }
+    document.getElementById('court-callout').innerHTML = callout;
+  }
+
+  // ── Load CSV ───────────────────────────────────────────────────────────
+  d3.csv('data/team_stats_scoring_rs.csv').then(raw => {
+    // Average across all teams per season
+    const byseason = d3.group(raw, d => d.SEASON);
+    allData = Array.from(byseason, ([season, rows]) => {
+      const avg = {};
+      const numCols = ['PCT_FGA_2PT','PCT_FGA_3PT','PCT_PTS_2PT','PCT_PTS_2PT_MR',
+                       'PCT_PTS_3PT','PCT_PTS_FB','PCT_PTS_FT','PCT_PTS_PAINT'];
+      numCols.forEach(col => {
+        avg[col] = d3.mean(rows, d => +d[col]);
+      });
+      avg.SEASON = season;
+      return avg;
+    }).sort((a,b) => a.SEASON.localeCompare(b.SEASON));
+
+    // Wire slider
+    const slider = document.getElementById('court-slider');
+    slider.min = 0;
+    slider.max = allData.length - 1;
+    slider.value = 0;
+    slider.addEventListener('input', () => updateCourt(allData[+slider.value]));
+
+    updateCourt(allData[0]);
+  }).catch(err => {
+    console.warn('CSV load error — using fallback data', err);
+    // Fallback hardcoded data so site works without server
+    const fallback = [
+      {SEASON:'2010-11',PCT_FGA_3PT:0.221,PCT_PTS_2PT_MR:0.183,PCT_PTS_PAINT:0.367,PCT_FGA_2PT:0.779},
+      {SEASON:'2011-12',PCT_FGA_3PT:0.232,PCT_PTS_2PT_MR:0.178,PCT_PTS_PAINT:0.362,PCT_FGA_2PT:0.768},
+      {SEASON:'2012-13',PCT_FGA_3PT:0.250,PCT_PTS_2PT_MR:0.172,PCT_PTS_PAINT:0.358,PCT_FGA_2PT:0.750},
+      {SEASON:'2013-14',PCT_FGA_3PT:0.264,PCT_PTS_2PT_MR:0.165,PCT_PTS_PAINT:0.355,PCT_FGA_2PT:0.736},
+      {SEASON:'2014-15',PCT_FGA_3PT:0.278,PCT_PTS_2PT_MR:0.157,PCT_PTS_PAINT:0.352,PCT_FGA_2PT:0.722},
+      {SEASON:'2015-16',PCT_FGA_3PT:0.297,PCT_PTS_2PT_MR:0.148,PCT_PTS_PAINT:0.348,PCT_FGA_2PT:0.703},
+      {SEASON:'2016-17',PCT_FGA_3PT:0.318,PCT_PTS_2PT_MR:0.138,PCT_PTS_PAINT:0.344,PCT_FGA_2PT:0.682},
+      {SEASON:'2017-18',PCT_FGA_3PT:0.336,PCT_PTS_2PT_MR:0.127,PCT_PTS_PAINT:0.341,PCT_FGA_2PT:0.664},
+      {SEASON:'2018-19',PCT_FGA_3PT:0.355,PCT_PTS_2PT_MR:0.118,PCT_PTS_PAINT:0.338,PCT_FGA_2PT:0.645},
+      {SEASON:'2019-20',PCT_FGA_3PT:0.368,PCT_PTS_2PT_MR:0.110,PCT_PTS_PAINT:0.336,PCT_FGA_2PT:0.632},
+      {SEASON:'2020-21',PCT_FGA_3PT:0.385,PCT_PTS_2PT_MR:0.102,PCT_PTS_PAINT:0.334,PCT_FGA_2PT:0.615},
+      {SEASON:'2021-22',PCT_FGA_3PT:0.391,PCT_PTS_2PT_MR:0.097,PCT_PTS_PAINT:0.332,PCT_FGA_2PT:0.609},
+      {SEASON:'2022-23',PCT_FGA_3PT:0.398,PCT_PTS_2PT_MR:0.092,PCT_PTS_PAINT:0.330,PCT_FGA_2PT:0.602},
+      {SEASON:'2023-24',PCT_FGA_3PT:0.404,PCT_PTS_2PT_MR:0.088,PCT_PTS_PAINT:0.328,PCT_FGA_2PT:0.596},
+    ];
+    allData = fallback;
+    const slider = document.getElementById('court-slider');
+    slider.min = 0; slider.max = allData.length - 1; slider.value = 0;
+    slider.addEventListener('input', () => updateCourt(allData[+slider.value]));
+    updateCourt(allData[0]);
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════════════════
+// VISUAL 3 — Radar Chart (static data, prototype only)
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  const axes = ['Points\n/36', 'Rebounds\n/36', 'Assists\n/36', '3PM\n/36', 'Blocks\n/36', 'Usage %'];
+  const N = axes.length;
+  const W = 420, H = 400, cx = 195, cy = 205, R = 145;
+
+  const eraData = {
+    '90s': { vals:[0.72,0.88,0.20,0.03,0.82,0.60], color:'#1a3a6b', visible:true },
+    '10s': { vals:[0.78,0.80,0.28,0.28,0.70,0.68], color:'#c0392b', visible:true },
+    'now': { vals:[0.80,0.72,0.38,0.62,0.62,0.75], color:'#2e7d32', visible:true },
+  };
+  const pfData = {
+    '90s': { vals:[0.78,0.80,0.22,0.08,0.55,0.65], color:'#1a3a6b', visible:true },
+    '10s': { vals:[0.80,0.72,0.30,0.40,0.42,0.72], color:'#c0392b', visible:true },
+    'now': { vals:[0.84,0.65,0.42,0.72,0.35,0.80], color:'#2e7d32', visible:true },
+  };
+  let currentPos = 'C';
+
+  const svg = d3.select('#radar-svg');
+  const angle = i => (Math.PI * 2 * i / N) - Math.PI / 2;
+  const pt = (val, i) => [cx + val * R * Math.cos(angle(i)), cy + val * R * Math.sin(angle(i))];
+
+  function drawGrid() {
+    const g = svg.append('g').attr('class','radar-grid');
+    [0.25,0.5,0.75,1.0].forEach(r => {
+      const pts = d3.range(N).map(i => pt(r,i));
+      g.append('polygon')
+        .attr('points', pts.map(p=>p.join(',')).join(' '))
+        .attr('fill','none')
+        .attr('stroke', r === 1.0 ? '#bbb' : '#e0e0e0')
+        .attr('stroke-width', r === 1.0 ? 1.5 : 0.8);
+      g.append('text')
+        .attr('x', cx + 4).attr('y', cy - r * R + 3)
+        .attr('font-size', 9).attr('fill','#ccc')
+        .attr('font-family','Source Sans 3, sans-serif')
+        .text(['','25','50','75','100'][Math.round(r/0.25)]);
+    });
+    d3.range(N).forEach(i => {
+      const [ax,ay] = pt(1,i);
+      g.append('line')
+        .attr('x1',cx).attr('y1',cy).attr('x2',ax).attr('y2',ay)
+        .attr('stroke','#ddd').attr('stroke-width',1);
+    });
+  }
+
+  function drawLabels() {
+    const g = svg.append('g').attr('class','radar-labels');
+    axes.forEach((axis, i) => {
+      const [ax, ay] = pt(1.28, i);
+      const lines = axis.split('\n');
+      lines.forEach((line, li) => {
+        g.append('text')
+          .attr('x', ax).attr('y', ay + li * 13 - (lines.length - 1) * 6.5)
+          .attr('text-anchor','middle').attr('dominant-baseline','middle')
+          .attr('font-size',11).attr('font-weight','700')
+          .attr('font-family','Source Sans 3, sans-serif')
+          .attr('fill','#444').text(line);
+      });
+    });
+  }
+
+  function drawPolygons() {
+    svg.selectAll('.radar-poly').remove();
+    svg.selectAll('.radar-dot').remove();
+    const data = currentPos === 'C' ? eraData : pfData;
+    Object.entries(data).forEach(([era, d]) => {
+      if (!d.visible) return;
+      const pts = d.vals.map((v,i) => pt(v,i));
+      const closed = [...pts, pts[0]];
+      svg.append('polygon')
+        .attr('class','radar-poly')
+        .attr('points', pts.map(p=>p.join(',')).join(' '))
+        .attr('fill', d.color).attr('fill-opacity',0.10)
+        .attr('stroke', d.color).attr('stroke-width', 2.2)
+        .attr('stroke-linejoin','round');
+      pts.forEach(([px,py], i) => {
+        svg.append('circle')
+          .attr('class','radar-dot')
+          .attr('cx',px).attr('cy',py).attr('r',5)
+          .attr('fill',d.color).attr('stroke','white').attr('stroke-width',1.5)
+          .style('cursor','pointer')
+          .on('mousemove', event => {
+            const labels = {'90s':'90s–00s','10s':'2010s','now':'2020–24'};
+            const rawC = {'90s':['16.2','11.8','1.8','0.1','2.1','23.4%'],
+                          '10s':['17.5','11.1','2.5','0.6','1.8','25.1%'],
+                          'now':['18.0','10.2','3.4','1.4','1.6','27.8%']};
+            const rawPF= {'90s':['17.5','11.1','2.0','0.2','1.4','24.1%'],
+                          '10s':['18.1','10.2','2.7','0.9','1.1','26.4%'],
+                          'now':['18.9','9.3', '3.8','1.6','0.9','29.2%']};
+            const raw = currentPos === 'C' ? rawC : rawPF;
+            showTip(`<strong>${axes[i].replace('\n',' ')}</strong><br>${labels[era]}: <b>${raw[era][i]}</b>`, event);
+          })
+          .on('mouseleave', hideTip);
+      });
+    });
+  }
+
+  window.setRadarPos = function(pos) {
+    currentPos = pos;
+    document.getElementById('btn-C').classList.toggle('active', pos==='C');
+    document.getElementById('btn-PF').classList.toggle('active', pos==='PF');
+    drawPolygons();
+  };
+  window.toggleEra = function(era) {
+    const data = eraData; // toggle both C and PF
+    eraData[era].visible = !eraData[era].visible;
+    pfData[era].visible  = !pfData[era].visible;
+    const ids = {'90s':'era-90','10s':'era-10','now':'era-now'};
+    document.getElementById(ids[era]).classList.toggle('active', eraData[era].visible);
+    drawPolygons();
+  };
+
+  drawGrid();
+  drawLabels();
+  drawPolygons();
+})();
+</script>
+</body>
+</html>

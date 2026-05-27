@@ -479,6 +479,10 @@
       <button class="ctrl-btn"        id="s1-btn-pts"      onclick="s1SetMetric('pts')">Points Per Game</button>
       <button class="ctrl-btn"        id="s1-btn-pace"     onclick="s1SetMetric('pace')">Pace</button>
       <button class="ctrl-btn"        id="s1-btn-midrange" onclick="s1SetMetric('midrange')">Midrange %</button>
+      <span class="ctrl-label" style="margin-left:12px;">Era focus:</span>
+      <button class="ctrl-btn"        id="s1-era-rules"     onclick="s1SetEra('rules')">2004 Rules</button>
+      <button class="ctrl-btn"        id="s1-era-analytics" onclick="s1SetEra('analytics')">2012 Analytics</button>
+      <button class="ctrl-btn active red" id="s1-era-curry" onclick="s1SetEra('curry')">2015 Curry</button>
     </div>
 
 <svg id="s1-line" viewBox="0 0 760 340" style="width:100%;"></svg>
@@ -1802,8 +1806,34 @@ function castVote(btn, choice) {
   const SVG_W=760, SVG_H=340;
   const M={top:30,right:30,bottom:58,left:52};
   const CW=SVG_W-M.left-M.right, CH=SVG_H-M.top-M.bottom;
-  const CURRY_IDX = 19;
-  const CURRY_SEASON = "2015-16";
+  const ERAS = {
+    rules: {
+      season: "2004-05",
+      label: "Hand-checking rule change",
+      detail: "Perimeter creators get more freedom",
+      color: "#c9a84c",
+      pill: "2004 rules"
+    },
+    analytics: {
+      season: "2012-13",
+      label: "Analytics rise",
+      detail: "Threes become the math-friendly shot",
+      color: "#2e7d32",
+      pill: "2012 analytics"
+    },
+    curry: {
+      season: "2015-16",
+      label: "Curry era",
+      detail: "3-point explosion accelerates",
+      color: "#c0392b",
+      pill: "2015 Curry era"
+    }
+  };
+  Object.values(ERAS).forEach(era => {
+    era.idx = data.findIndex(d => d.season === era.season);
+  });
+  let currentEraKey = "curry";
+  const CURRY_IDX = ERAS.curry.idx;
 
   const svg = d3.select('#s1-line');
   const g   = svg.append('g').attr('transform',`translate(${M.left},${M.top})`);
@@ -1818,12 +1848,28 @@ function castVote(btn, choice) {
     .attr('height', CH)
     .attr('fill','#c0392b').attr('opacity', 0.07);
 
-  // Curry era dashed line
-  g.append('line').attr('id','s1-curry-line')
-    .attr('x1', xScale(CURRY_IDX)).attr('y1', 0)
-    .attr('x2', xScale(CURRY_IDX)).attr('y2', CH)
-    .attr('stroke','#c0392b').attr('stroke-width',1.8)
-    .attr('stroke-dasharray','5,4').attr('opacity',0.9);
+  // Era reference lines: rule change, analytics rise, Curry acceleration
+  const eraG = g.append('g').attr('id','s1-era-lines');
+  const eraRefs = eraG.selectAll('g.s1-era-ref')
+    .data(Object.entries(ERAS))
+    .enter()
+    .append('g')
+    .attr('class', d => `s1-era-ref s1-era-${d[0]}`);
+
+  eraRefs.append('line')
+    .attr('x1', d => xScale(d[1].idx)).attr('y1', 0)
+    .attr('x2', d => xScale(d[1].idx)).attr('y2', CH)
+    .attr('stroke', d => d[1].color).attr('stroke-width',1.6)
+    .attr('stroke-dasharray','5,4').attr('opacity',0.55);
+
+  eraRefs.append('text')
+    .attr('x', d => xScale(d[1].idx) + 5)
+    .attr('y', 14)
+    .attr('font-size','10').attr('font-weight','700')
+    .attr('fill', d => d[1].color)
+    .attr('font-family','Source Sans 3, sans-serif')
+    .attr('opacity',0.78)
+    .text(d => d[1].pill);
 
   // Grid lines group
   const gridG = g.append('g').attr('id','s1-grid');
@@ -1867,7 +1913,7 @@ function castVote(btn, choice) {
 
   const dotsG = g.append('g').attr('id','s1-dots');
 
-  // Curry annotation
+  // Selected era annotation
   const annoG = g.append('g').attr('id','s1-anno');
   const annoRect = annoG.append('rect')
     .attr('rx',4).attr('ry',4)
@@ -1894,16 +1940,15 @@ function castVote(btn, choice) {
     .append('path').attr('d','M 0 0 L 10 5 L 0 10 z')
     .attr('fill','#c0392b');
 
-  // Curry era legend pill
+  // Era legend pill
   const pillG = g.append('g').attr('transform',`translate(8,8)`);
-  pillG.append('rect').attr('width',140).attr('height',22).attr('rx',3)
+  const pillBg = pillG.append('rect').attr('width',184).attr('height',22).attr('rx',3)
     .attr('fill','#c0392b').attr('opacity',0.15);
-  pillG.append('rect').attr('width',12).attr('height',12).attr('x',6).attr('y',5)
+  const pillSwatch = pillG.append('rect').attr('width',12).attr('height',12).attr('x',6).attr('y',5)
     .attr('fill','#c0392b').attr('opacity',0.5).attr('rx',2);
-  pillG.append('text').attr('x',24).attr('y',16)
+  const pillText = pillG.append('text').attr('x',24).attr('y',16)
     .attr('font-size','11').attr('fill','#8b0000')
-    .attr('font-family','Source Sans 3, sans-serif').attr('font-weight','700')
-    .text('Curry era (2015–16+)');
+    .attr('font-family','Source Sans 3, sans-serif').attr('font-weight','700');
 
   // Tooltip dots
   const focusDot = g.append('circle').attr('r',6)
@@ -1939,6 +1984,58 @@ function castVote(btn, choice) {
     });
 
   let currentMetric = METRICS['3pa'];
+
+  function s1UpdateEraVisuals(animate=false) {
+    const era = ERAS[currentEraKey];
+    const col = currentMetric.col;
+    const eraVal = data[era.idx][col];
+    const cx = xScale(era.idx), cy = yScale(eraVal);
+    const offX = currentEraKey === 'curry' ? 60 : 44;
+    const offY = currentEraKey === 'rules' ? 18 : -48;
+    const textColor = currentEraKey === 'curry' ? '#8b0000' : era.color;
+
+    eraRefs.selectAll('line')
+      .transition().duration(animate ? 350 : 0)
+      .attr('stroke-width', d => d[0] === currentEraKey ? 2.4 : 1.4)
+      .attr('opacity', d => d[0] === currentEraKey ? 0.95 : 0.38);
+    eraRefs.selectAll('text')
+      .transition().duration(animate ? 350 : 0)
+      .attr('font-size', d => d[0] === currentEraKey ? 11 : 10)
+      .attr('opacity', d => d[0] === currentEraKey ? 1 : 0.45);
+
+    annoLine
+      .transition().duration(animate ? 350 : 0)
+      .attr('stroke', era.color)
+      .attr('x1', cx+offX-2).attr('y1', cy+offY+36)
+      .attr('x2', cx+2).attr('y2', cy-8);
+    annoRect
+      .transition().duration(animate ? 350 : 0)
+      .attr('stroke', era.color)
+      .attr('x', cx+offX-6).attr('y', cy+offY+2)
+      .attr('width', 164).attr('height', 42);
+    annoText1
+      .transition().duration(animate ? 350 : 0)
+      .attr('x', cx+offX).attr('y', cy+offY+14)
+      .attr('fill', textColor)
+      .text(era.label);
+    annoText2
+      .transition().duration(animate ? 350 : 0)
+      .attr('x', cx+offX).attr('y', cy+offY+26)
+      .attr('fill', textColor)
+      .text(era.season);
+    annoText3
+      .transition().duration(animate ? 350 : 0)
+      .attr('x', cx+offX).attr('y', cy+offY+38)
+      .attr('fill', textColor)
+      .text(era.detail);
+
+    pillBg.transition().duration(animate ? 350 : 0)
+      .attr('fill', era.color);
+    pillSwatch.transition().duration(animate ? 350 : 0)
+      .attr('fill', era.color);
+    pillText.attr('fill', textColor)
+      .text(`Era focus: ${era.pill}`);
+  }
 
   function s1Update(metricKey, animate) {
     currentMetric = METRICS[metricKey];
@@ -1987,18 +2084,8 @@ function castVote(btn, choice) {
       .attr('cy',d=>yScale(d[col]));
     dotSel.exit().remove();
 
-    // Annotation (Curry era callout)
-    const curryVal = data[CURRY_IDX][col];
-    const cx = xScale(CURRY_IDX), cy = yScale(curryVal);
-    const offX = 60, offY = -45;
-    annoLine
-      .attr('x1', cx+offX-2).attr('y1', cy+offY+36)
-      .attr('x2', cx+2).attr('y2', cy-8);
-    annoText1.attr('x', cx+offX).attr('y', cy+offY+14).text('Curry era');
-    annoText2.attr('x', cx+offX).attr('y', cy+offY+26).text('(3-point explosion');
-    annoText3.attr('x', cx+offX).attr('y', cy+offY+38).text('accelerates)');
-    annoRect.attr('x', cx+offX-6).attr('y', cy+offY+2)
-      .attr('width', 128).attr('height', 42);
+    // Annotation (selected era callout)
+    s1UpdateEraVisuals(animate);
 
     // Start + end value labels
     dotsG.selectAll('text.endlabel').remove();
@@ -2020,6 +2107,17 @@ function castVote(btn, choice) {
       document.getElementById('s1-btn-'+k).classList.toggle('active', k===key);
     });
     s1Update(key, true);
+  };
+
+  window.s1SetEra = function(key) {
+    currentEraKey = key;
+    ['rules','analytics','curry'].forEach(k => {
+      const btn = document.getElementById('s1-era-'+k);
+      btn.classList.toggle('active', k===key);
+      btn.classList.toggle('red', k==='curry' && k===key);
+      btn.classList.toggle('green', k==='analytics' && k===key);
+    });
+    s1UpdateEraVisuals(true);
   };
 
   s1Update('3pa', false);

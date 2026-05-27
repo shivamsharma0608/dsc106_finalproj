@@ -171,19 +171,61 @@
     }
     .slider-season { font-size: 13px; color: var(--muted); min-width: 70px; }
 
-    /* ── Visual 1 placeholder ────────────────────────────────────────────── */
-    .placeholder-viz {
-      background: var(--light);
-      border: 2px dashed var(--border);
-      border-radius: 6px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px; text-align: center; color: var(--muted);
-      min-height: 280px;
+    /* ── Visual 1 — Game Over Time line chart ───────────────────────────── */
+    #v1-wrap { width: 100%; }
+    #v1-chart-svg {
+      width: 100%; height: auto; display: block;
+      min-height: 320px; border-radius: 6px;
+      background: #fafafa;
     }
-    .placeholder-viz .ph-icon { font-size: 36px; margin-bottom: 12px; }
-    .placeholder-viz .ph-title { font-size: 15px; font-weight: 600; color: #555; margin-bottom: 6px; }
-    .placeholder-viz .ph-note { font-size: 13px; }
+    #v1-controls {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px;
+      margin-bottom: 16px;
+    }
+    #v1-metric-select {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 13px; font-weight: 600;
+      padding: 6px 12px; border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: white; color: var(--ink);
+      cursor: pointer; min-width: 200px;
+    }
+    #v1-replay-btn {
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 12px; font-weight: 700;
+      padding: 6px 16px; border-radius: 20px;
+      border: 1.5px solid var(--navy);
+      background: var(--navy); color: white;
+      cursor: pointer; letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    #v1-replay-btn:hover { background: #254d8a; }
+    #v1-freeze-label {
+      font-size: 13px; color: var(--muted);
+      flex: 1; min-width: 200px;
+    }
+    #v1-freeze-label strong { color: var(--navy); }
+    #v1-freeze-label.frozen { color: var(--ink); }
+    #v1-callout { margin-top: 4px; }
+    #v1-chart-svg .v1-axis text { font-size: 11px; fill: #666; }
+    #v1-chart-svg .v1-axis path,
+    #v1-chart-svg .v1-axis line { stroke: #ccc; }
+    #v1-chart-svg .v1-grid line { stroke: #e8e8e8; stroke-dasharray: 3,3; }
+    #v1-chart-svg .v1-line { fill: none; stroke: var(--navy); stroke-width: 2.5; }
+    #v1-chart-svg .v1-point {
+      fill: var(--navy); stroke: white; stroke-width: 2;
+      cursor: pointer; transition: r 0.15s;
+    }
+    #v1-chart-svg .v1-point:hover { fill: var(--red); r: 6; }
+    #v1-chart-svg .v1-point.frozen { fill: var(--red); r: 7; }
+    #v1-chart-svg .v1-curry-line {
+      stroke: var(--red); stroke-width: 1.5;
+      stroke-dasharray: 5,4; opacity: 0.85;
+    }
+    #v1-chart-svg .v1-curry-shade { fill: var(--red); opacity: 0.07; }
+    #v1-chart-svg .v1-curry-label {
+      font-size: 11px; font-weight: 700; fill: var(--red);
+    }
 
     /* ── Court SVG (Visual 2) ────────────────────────────────────────────── */
     #court-wrap {
@@ -472,11 +514,26 @@
 
   <div class="chart-card">
     <div class="chart-title">The Game Over Time — League Averages per Team per Game</div>
-    <!-- Teammate's Visual 1 will be embedded here -->
-    <div class="placeholder-viz">
-      <div class="ph-icon">📈</div>
-      <div class="ph-title">Visual 1 — Animated Line Chart</div>
-      <div class="ph-note">Teammate's viz goes here. Dropdown toggles between 3PA, Pace, PPG, Midrange. Curry era annotated.</div>
+
+    <div id="v1-controls">
+      <span class="ctrl-label">Metric:</span>
+      <select id="v1-metric-select" aria-label="Select metric">
+        <option value="3pa">3-Point Attempts (3PA)</option>
+        <option value="pace">Pace</option>
+        <option value="ppg">Points per Game (PPG)</option>
+        <option value="midrange">Midrange Share (%)</option>
+      </select>
+      <button type="button" id="v1-replay-btn">Replay animation</button>
+      <div id="v1-freeze-label">Click any season to compare against the league average.</div>
+    </div>
+
+    <div id="v1-wrap">
+      <svg id="v1-chart-svg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <div class="callout-box blue" id="v1-callout">
+      <strong>3-Point Attempts</strong>
+      League-average 3PA per team per game. Watch the hockey-stick rise after the Curry era (2015–16).
     </div>
   </div>
 </section>
@@ -758,6 +815,265 @@ function castVote(btn, choice) {
   };
   btn.style.cssText = styles[choice];
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// VISUAL 1 — The Game Over Time (animated line chart)
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  const CURRY_SEASON = '2015-16';
+  const SVG_W = 900, SVG_H = 400;
+  const M = { top: 28, right: 28, bottom: 72, left: 58 };
+  const CW = SVG_W - M.left - M.right;
+  const CH = SVG_H - M.top - M.bottom;
+
+  const METRICS = {
+    '3pa': {
+      key: 'avg_3pa',
+      label: '3-Point Attempts',
+      yLabel: 'Avg 3PA per team per game',
+      format: v => v.toFixed(1),
+      caption: 'League-average 3PA per team per game. Watch the hockey-stick rise after the Curry era (2015–16).',
+    },
+    pace: {
+      key: 'avg_pace',
+      label: 'Pace',
+      yLabel: 'Possessions per game',
+      format: v => v.toFixed(1),
+      caption: 'League-average pace (possessions per 48 minutes). The modern game runs faster than the 1990s grind.',
+    },
+    ppg: {
+      key: 'avg_ppg',
+      label: 'Points per Game',
+      yLabel: 'Avg points per team per game',
+      format: v => v.toFixed(1),
+      caption: 'League-average scoring per team per game. Higher pace and more threes pushed totals upward.',
+    },
+    midrange: {
+      key: 'avg_midrange',
+      label: 'Midrange Share',
+      yLabel: '% of points from midrange',
+      format: v => v.toFixed(1) + '%',
+      caption: 'Share of team points scored from midrange 2-pointers. This share collapsed as teams hunted threes.',
+    },
+  };
+
+  const svg = d3.select('#v1-chart-svg');
+  const g = svg.append('g').attr('transform', `translate(${M.left},${M.top})`);
+  const gridG = g.append('g').attr('class', 'v1-grid');
+  const shadeG = g.append('g');
+  const axisG = g.append('g').attr('class', 'v1-axis');
+  const lineG = g.append('g');
+  const pointG = g.append('g');
+  const labelG = g.append('g');
+
+  const selectEl = document.getElementById('v1-metric-select');
+  const replayBtn = document.getElementById('v1-replay-btn');
+  const freezeLabel = document.getElementById('v1-freeze-label');
+  const calloutEl = document.getElementById('v1-callout');
+
+  let allData = [];
+  let frozenSeason = null;
+  let currentMetric = '3pa';
+  let xScale, yScale;
+
+  function seasonStart(s) { return +String(s).slice(0, 4); }
+
+  function leagueMean(metricKey) {
+    const cfg = METRICS[currentMetric];
+    const vals = allData.map(d => d[cfg.key]).filter(v => v != null && !isNaN(v));
+    return d3.mean(vals);
+  }
+
+  function updateFreezeLabel() {
+    if (!frozenSeason) {
+      freezeLabel.className = '';
+      freezeLabel.innerHTML = 'Click any season to compare against the league average.';
+      return;
+    }
+    const cfg = METRICS[currentMetric];
+    const row = allData.find(d => d.SEASON === frozenSeason);
+    if (!row) return;
+    const val = row[cfg.key];
+    const avg = leagueMean();
+    const diff = val - avg;
+    const sign = diff >= 0 ? '+' : '';
+    freezeLabel.className = 'frozen';
+    freezeLabel.innerHTML =
+      `<strong>${frozenSeason}</strong>: ${cfg.format(val)} vs league avg ${cfg.format(avg)} ` +
+      `(<strong>${sign}${cfg.format(Math.abs(diff))}</strong> ${diff >= 0 ? 'above' : 'below'} average)`;
+  }
+
+  function updateCallout() {
+    const cfg = METRICS[currentMetric];
+    calloutEl.innerHTML = `<strong>${cfg.label}</strong>${cfg.caption}`;
+  }
+
+  function animateLine(path) {
+    const len = path.node().getTotalLength();
+    path
+      .attr('stroke-dasharray', `${len} ${len}`)
+      .attr('stroke-dashoffset', len)
+      .transition()
+      .duration(1800)
+      .ease(d3.easeCubicOut)
+      .attr('stroke-dashoffset', 0);
+  }
+
+  function render() {
+    const cfg = METRICS[currentMetric];
+    const data = allData.filter(d => d[cfg.key] != null && !isNaN(d[cfg.key]));
+
+    xScale = d3.scalePoint()
+      .domain(data.map(d => d.SEASON))
+      .range([0, CW])
+      .padding(0.08);
+
+    const yExtent = d3.extent(data, d => d[cfg.key]);
+    const pad = (yExtent[1] - yExtent[0]) * 0.08 || 1;
+    yScale = d3.scaleLinear()
+      .domain([Math.max(0, yExtent[0] - pad), yExtent[1] + pad])
+      .range([CH, 0])
+      .nice();
+
+    gridG.selectAll('*').remove();
+    gridG.selectAll('line')
+      .data(yScale.ticks(6))
+      .join('line')
+      .attr('x1', 0).attr('x2', CW)
+      .attr('y1', d => yScale(d))
+      .attr('y2', d => yScale(d));
+
+    axisG.selectAll('*').remove();
+    axisG.append('g')
+      .attr('transform', `translate(0,${CH})`)
+      .call(d3.axisBottom(xScale))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-0.6em')
+      .attr('dy', '0.2em');
+
+    axisG.append('g').call(d3.axisLeft(yScale).ticks(6));
+    axisG.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', -CH / 2)
+      .attr('y', -44)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', '#444')
+      .text(cfg.yLabel);
+
+    const curryIdx = data.findIndex(d => d.SEASON === CURRY_SEASON);
+    shadeG.selectAll('*').remove();
+    labelG.selectAll('*').remove();
+
+    if (curryIdx >= 0) {
+      const x0 = xScale(data[curryIdx].SEASON);
+      const xEnd = CW;
+      shadeG.append('rect')
+        .attr('class', 'v1-curry-shade')
+        .attr('x', x0)
+        .attr('y', 0)
+        .attr('width', Math.max(0, xEnd - x0))
+        .attr('height', CH);
+      shadeG.append('line')
+        .attr('class', 'v1-curry-line')
+        .attr('x1', x0).attr('x2', x0)
+        .attr('y1', 0).attr('y2', CH);
+      labelG.append('text')
+        .attr('class', 'v1-curry-label')
+        .attr('x', x0 + 6)
+        .attr('y', 14)
+        .text('Curry era');
+    }
+
+    const line = d3.line()
+      .x(d => xScale(d.SEASON))
+      .y(d => yScale(d[cfg.key]))
+      .curve(d3.curveMonotoneX);
+
+    lineG.selectAll('*').remove();
+    const path = lineG.append('path')
+      .datum(data)
+      .attr('class', 'v1-line')
+      .attr('d', line);
+
+    animateLine(path);
+
+    const points = pointG.selectAll('circle')
+      .data(data, d => d.SEASON)
+      .join('circle')
+      .attr('class', d => 'v1-point' + (d.SEASON === frozenSeason ? ' frozen' : ''))
+      .attr('cx', d => xScale(d.SEASON))
+      .attr('cy', d => yScale(d[cfg.key]))
+      .attr('r', d => d.SEASON === frozenSeason ? 7 : 4)
+      .on('mouseenter', function(event, d) {
+        showTip(
+          `<div class="tt-title">${d.SEASON}</div>` +
+          `<div><b>${cfg.label}:</b> ${cfg.format(d[cfg.key])}</div>` +
+          `<div style="color:#888;margin-top:4px">Click to freeze</div>`,
+          event
+        );
+      })
+      .on('mousemove', moveTip)
+      .on('mouseleave', hideTip)
+      .on('click', function(event, d) {
+        frozenSeason = d.SEASON === frozenSeason ? null : d.SEASON;
+        pointG.selectAll('circle')
+          .attr('class', row => 'v1-point' + (row.SEASON === frozenSeason ? ' frozen' : ''))
+          .attr('r', row => row.SEASON === frozenSeason ? 7 : 4);
+        updateFreezeLabel();
+        event.stopPropagation();
+      });
+
+    updateCallout();
+    updateFreezeLabel();
+  }
+
+  selectEl.addEventListener('change', () => {
+    currentMetric = selectEl.value;
+    render();
+  });
+
+  replayBtn.addEventListener('click', () => {
+    render();
+  });
+
+  Promise.all([
+    d3.csv('data/team_stats_traditional_rs.csv'),
+    d3.csv('data/team_stats_advanced_rs.csv'),
+    d3.csv('data/team_stats_scoring_rs.csv'),
+  ]).then(([trad, adv, score]) => {
+    const tradBy = d3.group(trad, d => d.SEASON);
+    const advBy = d3.group(adv, d => d.SEASON);
+    const scoreBy = d3.group(score, d => d.SEASON);
+
+    const seasons = [...new Set([
+      ...trad.map(d => d.SEASON),
+      ...adv.map(d => d.SEASON),
+      ...score.map(d => d.SEASON),
+    ])].sort((a, b) => seasonStart(a) - seasonStart(b));
+
+    allData = seasons.map(SEASON => {
+      const tRows = tradBy.get(SEASON) || [];
+      const aRows = advBy.get(SEASON) || [];
+      const sRows = scoreBy.get(SEASON) || [];
+      return {
+        SEASON,
+        avg_3pa: d3.mean(tRows, d => +d.FG3A),
+        avg_ppg: d3.mean(tRows, d => +d.PTS),
+        avg_pace: d3.mean(aRows, d => +d.PACE),
+        avg_midrange: d3.mean(sRows, d => +d.PCT_PTS_2PT_MR) * 100,
+      };
+    });
+
+    render();
+  }).catch(err => {
+    console.error('Visual 1 data load failed:', err);
+    document.getElementById('v1-wrap').innerHTML =
+      '<p style="color:#c0392b;padding:20px">Could not load chart data. Run a local server from the repo root.</p>';
+  });
+})();
 
 // ══════════════════════════════════════════════════════════════════════════
 // VISUAL 2 — Shot Zone Court Map (D3, driven by team_stats_scoring_rs.csv)

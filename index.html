@@ -468,16 +468,20 @@
 <section id="s1">
   <div class="section-tag">AND — Section 1 of 6</div>
   <h2 class="section-title">The game looked completely different in 1994.</h2>
-  <p class="section-body">Pace was slower, scoring was lower, and the 3-pointer was a tactical afterthought. The numbers tell a story of gradual shift — and then a sudden explosion that broke every trend.</p>
+  <p class="section-body">Pace was slower, scoring was lower, and the 3-pointer was a tactical afterthought. The numbers tell a story of gradual shift followed with a sudden explosion that broke every trend.</p>
 
   <div class="chart-card">
     <div class="chart-title">The Game Over Time — League Averages per Team per Game</div>
     <!-- Teammate's Visual 1 will be embedded here -->
-    <div class="placeholder-viz">
-      <div class="ph-icon">📈</div>
-      <div class="ph-title">Visual 1 — Animated Line Chart</div>
-      <div class="ph-note">Teammate's viz goes here. Dropdown toggles between 3PA, Pace, PPG, Midrange. Curry era annotated.</div>
+    <div class="chart-controls">
+      <span class="ctrl-label">Metric:</span>
+      <button class="ctrl-btn active" id="s1-btn-3pa"      onclick="s1SetMetric('3pa')">3-Pt Attempts</button>
+      <button class="ctrl-btn"        id="s1-btn-pts"      onclick="s1SetMetric('pts')">Points Per Game</button>
+      <button class="ctrl-btn"        id="s1-btn-pace"     onclick="s1SetMetric('pace')">Pace</button>
+      <button class="ctrl-btn"        id="s1-btn-midrange" onclick="s1SetMetric('midrange')">Midrange %</button>
     </div>
+
+<svg id="s1-line" viewBox="0 0 760 340" style="width:100%;"></svg>
   </div>
 </section>
 
@@ -485,7 +489,7 @@
 <section id="s2">
   <div class="section-tag">AND — Section 2 of 6</div>
   <h2 class="section-title">The court itself changed.</h2>
-  <p class="section-body">It wasn't just <em>how many</em> 3s were taken — it was <em>where</em> every shot came from. Drag the slider to watch the midrange zone shrink as the 3-point arc took over, season by season.</p>
+  <p class="section-body">It wasn't just <em>how many</em> 3s were taken. More importantly, it was <em>where</em> every shot came from. Drag the slider to watch the midrange zone shrink as the 3-point arc took over, season by season.</p>
 
   <div class="chart-card">
     <div class="chart-title">Where Shots Come From — Shot Zone Frequency by Season</div>
@@ -571,15 +575,48 @@
 <section id="s4">
   <div class="section-tag but">BUT — Section 4 of 6</div>
   <h2 class="section-title">And it made players more efficient than ever.</h2>
-  <p class="section-body">Modern players aren't just taking more 3-pointers — they're converting at higher rates across the board. True Shooting % has hit all-time highs. The revolution didn't just change <em>what</em> shots were taken; it changed how <em>well</em> they were made.</p>
+  <p class="section-body">Modern players aren't just taking more 3-pointers, as they're converting at higher rates across the board. True Shooting % has hit all-time highs. The revolution didn't just change <em>what</em> shots were taken; it changed how <em>well</em> they were made.</p>
 
   <div class="chart-card">
     <div class="chart-title">Efficiency Revolution — eFG% and TS% Over Time by Era</div>
-    <div class="placeholder-viz">
-      <div class="ph-icon">⚡</div>
-      <div class="ph-title">Visual 4 — Scatter Plot Explorer</div>
-      <div class="ph-note">Player-season bubbles: TS% (x) vs PPG (y), sized by minutes. Color = era. Filter by position. Hover for stat card.<br><br><em>Coming in final deliverable.</em></div>
+    <div class="chart-controls">
+  <span class="ctrl-label">Position:</span>
+  <button class="ctrl-btn active" id="s4-btn-All" onclick="s4SetPos('All')">All</button>
+  <button class="ctrl-btn" id="s4-btn-G" onclick="s4SetPos('G')">Guards</button>
+  <button class="ctrl-btn" id="s4-btn-F" onclick="s4SetPos('F')">Forwards</button>
+  <button class="ctrl-btn" id="s4-btn-C" onclick="s4SetPos('C')">Centers</button>
+  <span class="ctrl-label" style="margin-left:12px;">Era:</span>
+  <button class="ctrl-btn active" id="s4-btn-90" onclick="s4ToggleEra('90s')">90s–00s &amp; 2010s</button>
+  <button class="ctrl-btn active green" id="s4-btn-modern" onclick="s4ToggleEra('modern')">2015–present</button>
+</div>
+
+<div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;">
+  <div style="flex:1;min-width:320px;">
+    <svg id="s4-scatter" viewBox="0 0 560 460" style="width:100%;border:1px solid var(--border);border-radius:6px;background:#fafafa;"></svg>
+  </div>
+  <div style="width:210px;padding-top:8px;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;color:#333;">
+      <div style="width:14px;height:14px;border-radius:50%;background:#2e7d32;flex-shrink:0;opacity:0.75;"></div>
+      <span><b>90s–00s / 2010s</b> player-seasons</span>
     </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;color:#333;">
+      <div style="width:14px;height:14px;border-radius:50%;background:#e65100;flex-shrink:0;opacity:0.75;"></div>
+      <span><b>2015–present</b> player-seasons</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <svg width="40" height="20"><circle cx="8" cy="10" r="4" fill="#888" opacity="0.5"/><circle cx="30" cy="10" r="9" fill="#888" opacity="0.5"/></svg>
+      <span style="font-size:12px;color:#444;">Circle size = minutes played</span>
+    </div>
+    <div class="callout-box red">
+      <strong>Modern players shoot better</strong>
+      League avg TS% rose from ~52% in the 90s to ~58% today — the orange cloud sits visibly right of the green.
+    </div>
+    <div class="callout-box" style="background:#f0f8f0;border-left:4px solid #2e7d32;margin-top:10px;">
+      <strong>Scoring held steady</strong>
+      What changed is <em>how efficiently</em> those points were earned — the revolution is in shot selection, not volume.
+    </div>
+  </div>
+</div>
   </div>
 </section>
 
@@ -587,7 +624,7 @@
 <section id="s5">
   <div class="section-tag therefore">THEREFORE — Section 5 of 6</div>
   <h2 class="section-title">What if the legends played today?</h2>
-  <p class="section-body">The 90s' greatest players were dominant by any era's standard — but pace was slower, efficiency was lower, and 3-point shooting was a tactical afterthought. Pick a legend, pick a modern star, and see how the matchup looks once the game is on equal footing.</p>
+  <p class="section-body">The 90s' greatest players were dominant by any era's standard, but the pace was slower, efficiency was lower, and 3-point shooting was a tactical afterthought. Pick a legend, pick a modern star, and see how the matchup looks once the game is on equal footing.</p>
 
   <div class="chart-card">
     <div class="chart-title">If They Played Today — Era-Adjusted Stat Translator</div>
@@ -674,7 +711,7 @@
 <section id="s6">
   <div class="section-tag takeaway">TAKEAWAY — Section 6 of 6</div>
   <h2 class="section-title">Did the revolution make basketball better?</h2>
-  <p class="section-body">The numbers changed. The game changed. The players changed. Whether the soul of basketball got better or worse — that's a question the data can illuminate but not answer for you.</p>
+  <p class="section-body">A very debatable topic. The numbers changed. The game changed. The players changed. Whether basketball got better or worse is only a question  data can illuminate but not answer for you.</p>
 
   <div class="takeaway-steps">
     <div class="takeaway-step">
@@ -683,7 +720,7 @@
     </div>
     <div class="takeaway-step">
       <div class="step-num">2</div>
-      <div class="step-text"><strong>True Shooting % hit all-time highs</strong> in 2023 — the modern NBA is statistically the most efficient version of basketball ever played.</div>
+      <div class="step-text"><strong>True Shooting % hit all-time highs</strong> in 2023, demonstrating that the modern NBA is statistically the most efficient version of basketball ever played.</div>
     </div>
     <div class="takeaway-step">
       <div class="step-num red">3</div>
@@ -691,7 +728,7 @@
     </div>
     <div class="takeaway-step">
       <div class="step-num red">4</div>
-      <div class="step-text"><strong>Legends look different.</strong> Era adjustment reveals both undervalued and overvalued players from the 90s — the lens you use changes everything.</div>
+      <div class="step-text"><strong>Legends look different.</strong> Era adjustment reveals both undervalued and overvalued players from the 90s as the lens you use changes everything.</div>
     </div>
   </div>
 
@@ -711,7 +748,7 @@
     <div>
       <div class="writeup-q">① What have you done so far?</div>
       <div class="writeup-a">
-        We have established the full six-section narrative structure of our explorable explanation, following the and-but-therefore framework. The hero section, navigation, and overall visual identity of the site are complete, giving the project a cohesive editorial look using Playfair Display typography and a navy-gold palette. Visual 1 (the animated line chart showing league averages over time) has been built by our teammate using real Basketball Reference data, with a dropdown to toggle between 3PA, pace, PPG, and midrange attempts, annotated with the Curry era inflection point. Visual 2 (the shot zone court hex map, this page's interactive section) is implemented in D3.js and driven by real columns from our <code>team_stats_scoring_rs.csv</code> — specifically <code>PCT_PTS_2PT_MR</code> for midrange frequency, <code>PCT_FGA_3PT</code> for 3-point frequency, and <code>PCT_PTS_PAINT</code> for paint frequency — with a season slider producing animated transitions. Visual 3 (the big man radar chart) has a static mockup complete. Sections 4, 5, and 6 have their narrative text and structural scaffolding in place, ready to receive D3 visualizations.
+        We have established the full six-section narrative structure of our explorable explanation, following the and-but-therefore framework. The hero section, navigation, and overall visual identity of the site are complete, giving the project a cohesive editorial look using Playfair Display typography and a navy-gold palette. Visual 1 (the animated line chart showing league averages over time) has been built by our teammate using real Basketball Reference data, with a dropdown to toggle between 3PA, pace, PPG, and midrange attempts, annotated with the Curry era inflection point. Visual 2 (the shot zone court hex map, this page's interactive section) is implemented in D3.js and driven by real columns from our <code>team_stats_scoring_rs.csv</code> — specifically <code>PCT_PTS_2PT_MR</code> for midrange frequency, <code>PCT_FGA_3PT</code> for 3-point frequency, and <code>PCT_PTS_PAINT</code> for paint frequency — with a season slider producing animated transitions. Visual 3 (the big man radar chart) has a static mockup complete. Sections 4, 5, and 6 have their narrative text and structural scaffolding in place and are ready to receive D3 visualizations.
       </div>
     </div>
     <div>
@@ -1548,6 +1585,444 @@ function castVote(btn, choice) {
   });
 
   render();
+})();
+// ══════════════════════════════════════════════════════════════════════════
+// VISUAL 4 — Efficiency Revolution Scatter Plot
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  const players = [
+    {name:"Michael Jordan",season:"1995-96",pos:"G",era:"90s",ppg:30.4,ts:0.577,min:3090},
+    {name:"Karl Malone",season:"1996-97",pos:"F",era:"90s",ppg:27.4,ts:0.562,min:2998},
+    {name:"Shaquille O'Neal",season:"1999-00",pos:"C",era:"90s",ppg:29.7,ts:0.637,min:3163},
+    {name:"Allen Iverson",season:"2000-01",pos:"G",era:"90s",ppg:31.1,ts:0.512,min:3108},
+    {name:"Kobe Bryant",season:"2002-03",pos:"G",era:"90s",ppg:30.0,ts:0.551,min:3401},
+    {name:"LeBron James",season:"2005-06",pos:"F",era:"90s",ppg:31.4,ts:0.571,min:3361},
+    {name:"Dirk Nowitzki",season:"2006-07",pos:"F",era:"90s",ppg:24.6,ts:0.617,min:2685},
+    {name:"Dwyane Wade",season:"2008-09",pos:"G",era:"90s",ppg:30.2,ts:0.573,min:2967},
+    {name:"Kevin Durant",season:"2009-10",pos:"F",era:"90s",ppg:30.1,ts:0.589,min:3239},
+    {name:"Chris Paul",season:"2008-09",pos:"G",era:"90s",ppg:22.8,ts:0.582,min:3002},
+    {name:"Dwight Howard",season:"2009-10",pos:"C",era:"90s",ppg:18.3,ts:0.604,min:2843},
+    {name:"Carmelo Anthony",season:"2008-09",pos:"F",era:"90s",ppg:28.9,ts:0.545,min:3002},
+    {name:"Steve Nash",season:"2005-06",pos:"G",era:"90s",ppg:18.8,ts:0.652,min:2796},
+    {name:"Tracy McGrady",season:"2002-03",pos:"G",era:"90s",ppg:32.1,ts:0.561,min:2954},
+    {name:"Hakeem Olajuwon",season:"1996-97",pos:"C",era:"90s",ppg:23.2,ts:0.556,min:2852},
+    {name:"Tim Duncan",season:"2001-02",pos:"F",era:"90s",ppg:25.5,ts:0.563,min:3329},
+    {name:"Kevin Garnett",season:"2003-04",pos:"F",era:"90s",ppg:24.2,ts:0.551,min:3231},
+    {name:"Ray Allen",season:"2005-06",pos:"G",era:"90s",ppg:25.1,ts:0.599,min:2860},
+    {name:"Paul Pierce",season:"2005-06",pos:"F",era:"90s",ppg:26.8,ts:0.548,min:3008},
+    {name:"Reggie Miller",season:"1996-97",pos:"G",era:"90s",ppg:21.6,ts:0.587,min:2785},
+    {name:"Gary Payton",season:"1999-00",pos:"G",era:"90s",ppg:24.2,ts:0.535,min:3179},
+    {name:"Patrick Ewing",season:"1996-97",pos:"C",era:"90s",ppg:22.4,ts:0.538,min:2768},
+    {name:"Scottie Pippen",season:"1996-97",pos:"F",era:"90s",ppg:20.2,ts:0.537,min:2825},
+    {name:"Amar'e Stoudemire",season:"2007-08",pos:"C",era:"90s",ppg:25.2,ts:0.590,min:2827},
+    {name:"Tony Parker",season:"2008-09",pos:"G",era:"90s",ppg:22.0,ts:0.574,min:2922},
+    {name:"Chris Bosh",season:"2009-10",pos:"F",era:"90s",ppg:24.0,ts:0.559,min:2860},
+    {name:"Gilbert Arenas",season:"2005-06",pos:"G",era:"90s",ppg:29.3,ts:0.534,min:3077},
+    {name:"Yao Ming",season:"2006-07",pos:"C",era:"90s",ppg:25.0,ts:0.594,min:2690},
+    {name:"Pau Gasol",season:"2009-10",pos:"C",era:"90s",ppg:18.3,ts:0.557,min:2735},
+    {name:"Elton Brand",season:"2005-06",pos:"F",era:"90s",ppg:24.7,ts:0.573,min:2851},
+    {name:"Stephen Curry",season:"2015-16",pos:"G",era:"modern",ppg:30.1,ts:0.670,min:2700},
+    {name:"Stephen Curry",season:"2020-21",pos:"G",era:"modern",ppg:32.0,ts:0.683,min:2476},
+    {name:"James Harden",season:"2018-19",pos:"G",era:"modern",ppg:36.1,ts:0.617,min:2867},
+    {name:"Giannis Antetokounmpo",season:"2019-20",pos:"F",era:"modern",ppg:29.6,ts:0.617,min:2696},
+    {name:"Kevin Durant",season:"2021-22",pos:"F",era:"modern",ppg:29.9,ts:0.650,min:2789},
+    {name:"LeBron James",season:"2019-20",pos:"F",era:"modern",ppg:25.3,ts:0.604,min:2316},
+    {name:"Nikola Jokic",season:"2021-22",pos:"C",era:"modern",ppg:27.1,ts:0.659,min:2644},
+    {name:"Nikola Jokic",season:"2022-23",pos:"C",era:"modern",ppg:24.5,ts:0.664,min:2591},
+    {name:"Joel Embiid",season:"2022-23",pos:"C",era:"modern",ppg:33.1,ts:0.647,min:2331},
+    {name:"Luka Doncic",season:"2022-23",pos:"G",era:"modern",ppg:32.4,ts:0.618,min:2855},
+    {name:"Damian Lillard",season:"2022-23",pos:"G",era:"modern",ppg:32.2,ts:0.627,min:2882},
+    {name:"Jayson Tatum",season:"2022-23",pos:"F",era:"modern",ppg:30.1,ts:0.600,min:2868},
+    {name:"Ja Morant",season:"2021-22",pos:"G",era:"modern",ppg:27.4,ts:0.583,min:2547},
+    {name:"Zion Williamson",season:"2021-22",pos:"F",era:"modern",ppg:26.0,ts:0.644,min:1858},
+    {name:"Rudy Gobert",season:"2021-22",pos:"C",era:"modern",ppg:15.6,ts:0.672,min:2358},
+    {name:"Karl-Anthony Towns",season:"2021-22",pos:"C",era:"modern",ppg:24.6,ts:0.630,min:2411},
+    {name:"Kawhi Leonard",season:"2019-20",pos:"F",era:"modern",ppg:27.1,ts:0.598,min:2204},
+    {name:"Trae Young",season:"2021-22",pos:"G",era:"modern",ppg:28.4,ts:0.593,min:2834},
+    {name:"Kyrie Irving",season:"2018-19",pos:"G",era:"modern",ppg:23.8,ts:0.598,min:2302},
+    {name:"Klay Thompson",season:"2018-19",pos:"G",era:"modern",ppg:21.5,ts:0.601,min:2564},
+    {name:"Devin Booker",season:"2021-22",pos:"G",era:"modern",ppg:26.8,ts:0.590,min:2569},
+    {name:"Bam Adebayo",season:"2021-22",pos:"C",era:"modern",ppg:19.1,ts:0.588,min:2557},
+    {name:"Paul George",season:"2018-19",pos:"F",era:"modern",ppg:28.0,ts:0.596,min:2503},
+    {name:"Bradley Beal",season:"2020-21",pos:"G",era:"modern",ppg:31.3,ts:0.569,min:2536},
+    {name:"Clint Capela",season:"2018-19",pos:"C",era:"modern",ppg:16.6,ts:0.651,min:2411},
+    {name:"Joe Harris",season:"2019-20",pos:"F",era:"modern",ppg:14.5,ts:0.664,min:1762},
+    {name:"DeAndre Jordan",season:"2014-15",pos:"C",era:"modern",ppg:11.5,ts:0.718,min:2403},
+    {name:"Jimmy Butler",season:"2020-21",pos:"F",era:"modern",ppg:21.5,ts:0.590,min:2150},
+    {name:"De'Aaron Fox",season:"2022-23",pos:"G",era:"modern",ppg:25.2,ts:0.574,min:2644},
+    {name:"Anthony Edwards",season:"2022-23",pos:"G",era:"modern",ppg:24.6,ts:0.570,min:2699},
+    {name:"Tyrese Haliburton",season:"2022-23",pos:"G",era:"modern",ppg:22.7,ts:0.615,min:2595},
+  ];
+
+  const SVG_W=560,SVG_H=460;
+  const PAD={l:58,r:20,t:30,b:55};
+  const PW=SVG_W-PAD.l-PAD.r, PH=SVG_H-PAD.t-PAD.b;
+  const xMin=0.48,xMax=0.73,yMin=10,yMax=38;
+  const minSz=3,maxSz=11;
+  const minMin=Math.min(...players.map(p=>p.min));
+  const maxMin=Math.max(...players.map(p=>p.min));
+  const ERA_COLOR={'90s':'#2e7d32','modern':'#e65100'};
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.getElementById('s4-scatter');
+
+  let s4Pos='All', s4Eras={'90s':true,'modern':true};
+
+  function sx(v){return PAD.l+(v-xMin)/(xMax-xMin)*PW;}
+  function sy(v){return PAD.t+PH-(v-yMin)/(yMax-yMin)*PH;}
+  function sr(m){return minSz+(m-minMin)/(maxMin-minMin)*(maxSz-minSz);}
+  function mk(tag,attrs){const el=document.createElementNS(ns,tag);for(const[k,v] of Object.entries(attrs))el.setAttribute(k,v);return el;}
+
+  function s4DrawAxes(){
+    const g=mk('g',{id:'s4-axes'});
+    [0.48,0.50,0.52,0.54,0.56,0.58,0.60,0.62,0.64,0.66,0.68,0.70,0.72].forEach(v=>{
+      g.appendChild(mk('line',{x1:sx(v),y1:PAD.t,x2:sx(v),y2:PAD.t+PH,stroke:'#e0e0e0','stroke-width':'0.8'}));
+      if(v%0.04<0.001||Math.abs(v%0.04-0.04)<0.001){
+        const t=mk('text',{x:sx(v),y:PAD.t+PH+16,'text-anchor':'middle','font-size':'10','fill':'#666','font-family':'Source Sans 3, sans-serif'});
+        t.textContent=(v*100).toFixed(0)+'%'; g.appendChild(t);
+      }
+    });
+    [10,15,20,25,30,35].forEach(v=>{
+      g.appendChild(mk('line',{x1:PAD.l,y1:sy(v),x2:PAD.l+PW,y2:sy(v),stroke:'#e0e0e0','stroke-width':'0.8'}));
+      const t=mk('text',{x:PAD.l-6,y:sy(v)+4,'text-anchor':'end','font-size':'10','fill':'#666','font-family':'Source Sans 3, sans-serif'});
+      t.textContent=v; g.appendChild(t);
+    });
+    g.appendChild(mk('line',{x1:PAD.l,y1:PAD.t,x2:PAD.l,y2:PAD.t+PH,stroke:'#aaa','stroke-width':'1.5'}));
+    g.appendChild(mk('line',{x1:PAD.l,y1:PAD.t+PH,x2:PAD.l+PW,y2:PAD.t+PH,stroke:'#aaa','stroke-width':'1.5'}));
+    const xl=mk('text',{x:PAD.l+PW/2,y:SVG_H-5,'text-anchor':'middle','font-size':'12','fill':'#333','font-family':'Source Sans 3, sans-serif','font-weight':'700'});
+    xl.textContent='True Shooting % (TS%)'; g.appendChild(xl);
+    const ylg=mk('g',{transform:`translate(14,${PAD.t+PH/2}) rotate(-90)`});
+    const yl=mk('text',{x:0,y:0,'text-anchor':'middle','font-size':'12','fill':'#333','font-family':'Source Sans 3, sans-serif','font-weight':'700'});
+    yl.textContent='Points Per Game'; ylg.appendChild(yl); g.appendChild(ylg);
+    svg.appendChild(g);
+  }
+
+  function s4DrawTrends(){
+    const ex=document.getElementById('s4-trends'); if(ex)ex.remove();
+    const g=mk('g',{id:'s4-trends'});
+    ['90s','modern'].forEach(era=>{
+      if(!s4Eras[era])return;
+      const pts=players.filter(p=>p.era===era&&(s4Pos==='All'||p.pos===s4Pos));
+      if(pts.length<2)return;
+      const n=pts.length,mx=pts.reduce((s,p)=>s+p.ts,0)/n,my=pts.reduce((s,p)=>s+p.ppg,0)/n;
+      let num=0,den=0;
+      pts.forEach(p=>{num+=(p.ts-mx)*(p.ppg-my);den+=(p.ts-mx)**2;});
+      const slope=num/den,intercept=my-slope*mx;
+      g.appendChild(mk('line',{x1:sx(xMin),y1:sy(slope*xMin+intercept),x2:sx(xMax),y2:sy(slope*xMax+intercept),stroke:ERA_COLOR[era],'stroke-width':'1.8','stroke-dasharray':'5,4',opacity:'0.6'}));
+    });
+    svg.appendChild(g);
+  }
+
+  const s4tip=document.getElementById('tooltip');
+  function s4ShowTip(e,p){
+    const eraLabel=p.era==='90s'?'90s–00s/2010s':'2015–present';
+    document.getElementById('tt-title').textContent=p.name;
+    document.getElementById('tt-body').innerHTML=`<span style="color:${ERA_COLOR[p.era]};font-weight:700;">${p.season} · ${p.pos} · ${eraLabel}</span><br>PPG: <b>${p.ppg}</b> &nbsp;|&nbsp; TS%: <b>${(p.ts*100).toFixed(1)}%</b><br>Minutes: <b>${p.min.toLocaleString()}</b>`;
+    s4tip.style.display='block';
+    s4MoveTip(e);
+  }
+  function s4MoveTip(e){
+    const ox=e.clientX>window.innerWidth-220?-200:14;
+    s4tip.style.left=(e.clientX+ox)+'px';
+    s4tip.style.top=(e.clientY-10)+'px';
+  }
+
+  function s4DrawDots(){
+    const ex=document.getElementById('s4-dots'); if(ex)ex.remove();
+    const g=mk('g',{id:'s4-dots'});
+    const filtered=players.filter(p=>(s4Pos==='All'||p.pos===s4Pos)&&s4Eras[p.era]);
+    ['90s','modern'].forEach(era=>{
+      filtered.filter(p=>p.era===era).forEach(p=>{
+        const c=mk('circle',{cx:sx(p.ts),cy:sy(p.ppg),r:sr(p.min),fill:ERA_COLOR[era],opacity:'0.65',stroke:'#fff','stroke-width':'0.8'});
+        c.style.cursor='pointer';
+        c.addEventListener('mouseenter',e=>s4ShowTip(e,p));
+        c.addEventListener('mousemove',s4MoveTip);
+        c.addEventListener('mouseleave',()=>s4tip.style.display='none');
+        g.appendChild(c);
+      });
+    });
+    svg.appendChild(g);
+  }
+
+  window.s4SetPos=function(pos){
+    s4Pos=pos;
+    ['All','G','F','C'].forEach(p=>document.getElementById('s4-btn-'+p).classList.toggle('active',p===pos));
+    s4DrawTrends(); s4DrawDots();
+  };
+  window.s4ToggleEra=function(era){
+    s4Eras[era]=!s4Eras[era];
+    const id=era==='90s'?'s4-btn-90':'s4-btn-modern';
+    document.getElementById(id).classList.toggle('active',s4Eras[era]);
+    s4DrawTrends(); s4DrawDots();
+  };
+
+  s4DrawAxes(); s4DrawTrends(); s4DrawDots();
+})();
+
+      // ══════════════════════════════════════════════════════════════════════════
+// VISUAL 1 — The Game Over Time (Line Chart)
+// ══════════════════════════════════════════════════════════════════════════
+(function() {
+  const data = [
+    {season:"1996-97", "3pa":16.8, pts:96.9,  pace:91.6,  midrange:20.0},
+    {season:"1997-98", "3pa":12.7, pts:95.6,  pace:91.8,  midrange:23.9},
+    {season:"1998-99", "3pa":13.2, pts:91.6,  pace:90.5,  midrange:24.1},
+    {season:"1999-00", "3pa":13.7, pts:97.5,  pace:94.7,  midrange:25.4},
+    {season:"2000-01", "3pa":13.7, pts:94.8,  pace:92.6,  midrange:25.2},
+    {season:"2001-02", "3pa":14.8, pts:95.5,  pace:92.0,  midrange:24.8},
+    {season:"2002-03", "3pa":14.7, pts:95.1,  pace:92.3,  midrange:24.3},
+    {season:"2003-04", "3pa":14.9, pts:93.4,  pace:91.5,  midrange:23.3},
+    {season:"2004-05", "3pa":15.8, pts:97.2,  pace:92.3,  midrange:23.0},
+    {season:"2005-06", "3pa":16.0, pts:97.0,  pace:91.7,  midrange:22.3},
+    {season:"2006-07", "3pa":16.9, pts:98.7,  pace:92.9,  midrange:21.3},
+    {season:"2007-08", "3pa":18.1, pts:99.9,  pace:93.5,  midrange:21.7},
+    {season:"2008-09", "3pa":18.1, pts:99.9,  pace:92.8,  midrange:20.9},
+    {season:"2009-10", "3pa":18.1, pts:100.5, pace:93.6,  midrange:20.5},
+    {season:"2010-11", "3pa":18.0, pts:99.6,  pace:92.9,  midrange:20.3},
+    {season:"2011-12", "3pa":18.4, pts:96.3,  pace:92.2,  midrange:19.9},
+    {season:"2012-13", "3pa":20.0, pts:98.1,  pace:92.9,  midrange:18.7},
+    {season:"2013-14", "3pa":21.5, pts:101.0, pace:94.8,  midrange:17.4},
+    {season:"2014-15", "3pa":22.4, pts:100.0, pace:94.7,  midrange:17.4},
+    {season:"2015-16", "3pa":24.1, pts:102.7, pace:96.5,  midrange:16.2},
+    {season:"2016-17", "3pa":27.0, pts:105.6, pace:97.0,  midrange:14.5},
+    {season:"2017-18", "3pa":29.0, pts:106.3, pace:98.0,  midrange:12.5},
+    {season:"2018-19", "3pa":32.0, pts:111.2, pace:100.7, midrange:9.8},
+    {season:"2019-20", "3pa":34.1, pts:111.7, pace:100.8, midrange:8.5},
+    {season:"2020-21", "3pa":34.6, pts:112.1, pace:99.8,  midrange:8.4},
+    {season:"2021-22", "3pa":35.2, pts:110.6, pace:98.8,  midrange:8.2},
+    {season:"2022-23", "3pa":34.2, pts:114.7, pace:99.8,  midrange:7.7},
+  ];
+
+  const METRICS = {
+    '3pa':      { label:"3-Pt Attempts per Game", col:"3pa",      curry:24.1, curryIdx:19, yMin:10,  yMax:40,  fmt:v=>v.toFixed(1) },
+    'pts':      { label:"Points Per Game",         col:"pts",      curry:102.7,curryIdx:19, yMin:85,  yMax:120, fmt:v=>v.toFixed(1) },
+    'pace':     { label:"Pace (Possessions/Game)", col:"pace",     curry:96.5, curryIdx:19, yMin:86,  yMax:104, fmt:v=>v.toFixed(1) },
+    'midrange': { label:"Midrange % of Points",    col:"midrange", curry:16.2, curryIdx:19, yMin:5,   yMax:28,  fmt:v=>v.toFixed(1)+'%' },
+  };
+
+  const SVG_W=760, SVG_H=340;
+  const M={top:30,right:30,bottom:58,left:52};
+  const CW=SVG_W-M.left-M.right, CH=SVG_H-M.top-M.bottom;
+  const CURRY_IDX = 19;
+  const CURRY_SEASON = "2015-16";
+
+  const svg = d3.select('#s1-line');
+  const g   = svg.append('g').attr('transform',`translate(${M.left},${M.top})`);
+
+  const xScale = d3.scaleLinear().domain([0, data.length-1]).range([0, CW]);
+  const yScale = d3.scaleLinear().range([CH, 0]);
+
+  // Curry era shading
+  g.append('rect').attr('id','s1-curry-shade')
+    .attr('x', xScale(CURRY_IDX)).attr('y', 0)
+    .attr('width', xScale(data.length-1) - xScale(CURRY_IDX))
+    .attr('height', CH)
+    .attr('fill','#c0392b').attr('opacity', 0.07);
+
+  // Curry era dashed line
+  g.append('line').attr('id','s1-curry-line')
+    .attr('x1', xScale(CURRY_IDX)).attr('y1', 0)
+    .attr('x2', xScale(CURRY_IDX)).attr('y2', CH)
+    .attr('stroke','#c0392b').attr('stroke-width',1.8)
+    .attr('stroke-dasharray','5,4').attr('opacity',0.9);
+
+  // Grid lines group
+  const gridG = g.append('g').attr('id','s1-grid');
+
+  // X axis labels (every other season)
+  const xAxisG = g.append('g').attr('id','s1-xaxis')
+    .attr('transform',`translate(0,${CH})`);
+  data.forEach((d,i) => {
+    if(i % 2 === 0) {
+      xAxisG.append('text')
+        .attr('x', xScale(i)).attr('y', 18)
+        .attr('text-anchor','end')
+        .attr('transform',`rotate(-45, ${xScale(i)}, 18)`)
+        .attr('font-size','10').attr('fill','#666')
+        .attr('font-family','Source Sans 3, sans-serif')
+        .text(d.season);
+    }
+  });
+  g.append('line')
+    .attr('x1',0).attr('y1',CH).attr('x2',CW).attr('y2',CH)
+    .attr('stroke','#aaa').attr('stroke-width','1.5');
+  g.append('line')
+    .attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',CH)
+    .attr('stroke','#aaa').attr('stroke-width','1.5');
+
+  // Y axis label
+  const yLabelG = g.append('g')
+    .attr('transform',`translate(-40,${CH/2}) rotate(-90)`);
+  const yLabelEl = yLabelG.append('text')
+    .attr('text-anchor','middle')
+    .attr('font-size','12').attr('font-weight','700')
+    .attr('fill','#333').attr('font-family','Source Sans 3, sans-serif');
+
+  // Line + dots
+  const linePath = g.append('path')
+    .attr('id','s1-linepath')
+    .attr('fill','none')
+    .attr('stroke','#1a3a6b')
+    .attr('stroke-width','2.8')
+    .attr('stroke-linejoin','round');
+
+  const dotsG = g.append('g').attr('id','s1-dots');
+
+  // Curry annotation
+  const annoG = g.append('g').attr('id','s1-anno');
+  const annoRect = annoG.append('rect')
+    .attr('rx',4).attr('ry',4)
+    .attr('fill','white').attr('stroke','#c0392b').attr('stroke-width',1.2);
+  const annoLine = annoG.append('line')
+    .attr('stroke','#c0392b').attr('stroke-width',1.4)
+    .attr('marker-end','url(#s1-arrow)');
+  const annoText1 = annoG.append('text')
+    .attr('font-size','11').attr('font-weight','700')
+    .attr('fill','#8b0000').attr('font-family','Source Sans 3, sans-serif');
+  const annoText2 = annoG.append('text')
+    .attr('font-size','10').attr('fill','#8b0000')
+    .attr('font-family','Source Sans 3, sans-serif');
+  const annoText3 = annoG.append('text')
+    .attr('font-size','10').attr('fill','#8b0000')
+    .attr('font-family','Source Sans 3, sans-serif');
+
+  // Arrow marker
+  svg.append('defs').append('marker')
+    .attr('id','s1-arrow').attr('viewBox','0 0 10 10')
+    .attr('refX',8).attr('refY',5)
+    .attr('markerWidth',6).attr('markerHeight',6)
+    .attr('orient','auto')
+    .append('path').attr('d','M 0 0 L 10 5 L 0 10 z')
+    .attr('fill','#c0392b');
+
+  // Curry era legend pill
+  const pillG = g.append('g').attr('transform',`translate(8,8)`);
+  pillG.append('rect').attr('width',140).attr('height',22).attr('rx',3)
+    .attr('fill','#c0392b').attr('opacity',0.15);
+  pillG.append('rect').attr('width',12).attr('height',12).attr('x',6).attr('y',5)
+    .attr('fill','#c0392b').attr('opacity',0.5).attr('rx',2);
+  pillG.append('text').attr('x',24).attr('y',16)
+    .attr('font-size','11').attr('fill','#8b0000')
+    .attr('font-family','Source Sans 3, sans-serif').attr('font-weight','700')
+    .text('Curry era (2015–16+)');
+
+  // Tooltip dots
+  const focusDot = g.append('circle').attr('r',6)
+    .attr('fill','#1a3a6b').attr('stroke','white').attr('stroke-width',2)
+    .attr('opacity',0).attr('pointer-events','none');
+
+  // Hover overlay
+  g.append('rect')
+    .attr('width',CW).attr('height',CH)
+    .attr('fill','transparent')
+    .on('mousemove', function(event) {
+      const [mx] = d3.pointer(event, this);
+      const idx  = Math.round(xScale.invert(mx));
+      const clamped = Math.max(0, Math.min(data.length-1, idx));
+      const d = data[clamped];
+      const col = currentMetric.col;
+      const val = d[col];
+      const cy  = yScale(val);
+      const cx  = xScale(clamped);
+      focusDot.attr('cx',cx).attr('cy',cy).attr('opacity',1);
+      document.getElementById('tt-title').textContent = d.season;
+      document.getElementById('tt-body').innerHTML =
+        `${currentMetric.label}: <b>${currentMetric.fmt(val)}</b>`;
+      const tip = document.getElementById('tooltip');
+      tip.style.display = 'block';
+      const ox = event.clientX > window.innerWidth-220 ? -200 : 14;
+      tip.style.left = (event.clientX+ox)+'px';
+      tip.style.top  = (event.clientY-10)+'px';
+    })
+    .on('mouseleave', function() {
+      focusDot.attr('opacity',0);
+      document.getElementById('tooltip').style.display='none';
+    });
+
+  let currentMetric = METRICS['3pa'];
+
+  function s1Update(metricKey, animate) {
+    currentMetric = METRICS[metricKey];
+    const col = currentMetric.col;
+    yScale.domain([currentMetric.yMin, currentMetric.yMax]);
+
+    // Grid
+    const ticks = yScale.ticks(5);
+    const gridSel = gridG.selectAll('line').data(ticks);
+    gridSel.enter().append('line').merge(gridSel)
+      .attr('x1',0).attr('x2',CW)
+      .attr('y1',d=>yScale(d)).attr('y2',d=>yScale(d))
+      .attr('stroke','#e0e0e0').attr('stroke-width','0.8');
+    gridSel.exit().remove();
+    const tickSel = gridG.selectAll('text').data(ticks);
+    tickSel.enter().append('text').merge(tickSel)
+      .attr('x',-6).attr('y',d=>yScale(d)+4)
+      .attr('text-anchor','end').attr('font-size','10').attr('fill','#666')
+      .attr('font-family','Source Sans 3, sans-serif')
+      .text(d => col==='midrange' ? d+'%' : d);
+    tickSel.exit().remove();
+
+    yLabelEl.text(currentMetric.label);
+
+    // Line
+    const lineGen = d3.line()
+      .x((_,i) => xScale(i))
+      .y(d => yScale(d[col]))
+      .curve(d3.curveMonotoneX);
+
+    if(animate) {
+      linePath.transition().duration(500).ease(d3.easeCubicOut)
+        .attr('d', lineGen(data));
+    } else {
+      linePath.attr('d', lineGen(data));
+    }
+
+    // Dots
+    const dotSel = dotsG.selectAll('circle').data(data);
+    dotSel.enter().append('circle')
+      .attr('r',4).attr('fill','#1a3a6b')
+      .attr('stroke','white').attr('stroke-width',1.5)
+      .merge(dotSel)
+      .transition().duration(animate?500:0).ease(d3.easeCubicOut)
+      .attr('cx',(_,i)=>xScale(i))
+      .attr('cy',d=>yScale(d[col]));
+    dotSel.exit().remove();
+
+    // Annotation (Curry era callout)
+    const curryVal = data[CURRY_IDX][col];
+    const cx = xScale(CURRY_IDX), cy = yScale(curryVal);
+    const offX = 60, offY = -45;
+    annoLine
+      .attr('x1', cx+offX-2).attr('y1', cy+offY+36)
+      .attr('x2', cx+2).attr('y2', cy-8);
+    annoText1.attr('x', cx+offX).attr('y', cy+offY+14).text('Curry era');
+    annoText2.attr('x', cx+offX).attr('y', cy+offY+26).text('(3-point explosion');
+    annoText3.attr('x', cx+offX).attr('y', cy+offY+38).text('accelerates)');
+    annoRect.attr('x', cx+offX-6).attr('y', cy+offY+2)
+      .attr('width', 128).attr('height', 42);
+
+    // Start + end value labels
+    dotsG.selectAll('text.endlabel').remove();
+    [0, data.length-1].forEach(i => {
+      const d = data[i];
+      dotsG.append('text').attr('class','endlabel')
+        .attr('x', xScale(i) + (i===0 ? 8 : -8))
+        .attr('y', yScale(d[col]) - 10)
+        .attr('text-anchor', i===0 ? 'start' : 'end')
+        .attr('font-size','11').attr('font-weight','700')
+        .attr('fill','#1a3a6b')
+        .attr('font-family','Source Sans 3, sans-serif')
+        .text(currentMetric.fmt(d[col]));
+    });
+  }
+
+  window.s1SetMetric = function(key) {
+    ['3pa','pts','pace','midrange'].forEach(k => {
+      document.getElementById('s1-btn-'+k).classList.toggle('active', k===key);
+    });
+    s1Update(key, true);
+  };
+
+  s1Update('3pa', false);
 })();
 </script>
 </body>
